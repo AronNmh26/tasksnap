@@ -71,7 +71,11 @@ export default function TaskReviewScreen() {
           ))}
         </View>
 
-        {imageUri ? <Text style={styles.helperNote}>Tip: Review task details before saving.</Text> : null}
+        {imageUri ? (
+          <Text style={styles.helperNote}>
+            Tip: AI task identification from photos is not available in this version. Please review and enter details manually.
+          </Text>
+        ) : null}
 
         <View style={styles.sectionHeader}>
           <MaterialIcons name="event" size={20} color={colors.primary} />
@@ -230,4 +234,3 @@ const createStyles = (colors: ThemeColors) =>
       fontStyle: "italic",
     },
   });
-

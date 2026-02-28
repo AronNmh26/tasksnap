@@ -5,6 +5,7 @@ import { Platform } from "react-native";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInAnonymously,
   signOut,
   updateProfile,
   onAuthStateChanged,
@@ -21,7 +22,7 @@ export interface AuthUser {
   email: string;
   name: string;
   avatar?: string;
-  provider: "email" | "google" | "facebook";
+  provider: "email" | "google" | "facebook" | "guest";
 }
 
 interface AuthState {
@@ -31,6 +32,7 @@ interface AuthState {
   isSessionChecked: boolean;
 
   login: (email: string, password: string) => Promise<void>;
+  loginAsGuest: () => Promise<void>;
   loginWithGoogle: (idToken: string | null, accessToken?: string | null) => Promise<void>;
   loginWithGooglePopup: () => Promise<void>;
   loginWithFacebook: (accessToken: string) => Promise<void>;
@@ -47,13 +49,19 @@ const STORAGE_KEY = "@auth_user";
 // ✅ helper to map Firebase user -> your AuthUser
 function mapFirebaseUser(u: any): AuthUser {
   const providerId: string = u?.providerData?.[0]?.providerId ?? "password";
-  const provider: AuthUser["provider"] =
-    providerId.includes("google") ? "google" : providerId.includes("facebook") ? "facebook" : "email";
+  const isAnonymous = Boolean(u?.isAnonymous);
+  const provider: AuthUser["provider"] = isAnonymous
+    ? "guest"
+    : providerId.includes("google")
+      ? "google"
+      : providerId.includes("facebook")
+        ? "facebook"
+        : "email";
 
   return {
     id: u.uid,
     email: u.email ?? "",
-    name: u.displayName ?? (u.email ? u.email.split("@")[0] : "User"),
+    name: isAnonymous ? "Guest User" : u.displayName ?? (u.email ? u.email.split("@")[0] : "User"),
     avatar: u.photoURL ?? undefined,
     provider,
   };
@@ -135,6 +143,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
       const message = err?.message ?? "Google login failed";
+      set({ error: message, isSessionChecked: true });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  loginAsGuest: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const res = await signInAnonymously(auth);
+      const mapped = mapFirebaseUser(res.user);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      set({ user: mapped, isSessionChecked: true });
+    } catch (err: any) {
+      const message = err?.message ?? "Guest login failed";
       set({ error: message, isSessionChecked: true });
       throw err;
     } finally {

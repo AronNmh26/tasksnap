@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
@@ -23,6 +23,7 @@ export default function CameraCaptureScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [saving, setSaving] = useState(false);
+  const flashMode = flashEnabled ? (Platform.OS === "web" ? "torch" : "on") : "off";
 
   if (!permission) return <View />;
 
@@ -179,9 +180,9 @@ export default function CameraCaptureScreen() {
       <CameraView
         ref={cameraRef}
         style={styles.camera}
-        // Keep flash mode for photo capture and enable torch for live preview.
-        flash={flashEnabled ? "on" : "off"}
-        enableTorch={flashEnabled}
+        // Native uses torch prop for continuous light. Web expects flash mode string.
+        flash={flashMode as any}
+        enableTorch={Platform.OS === "web" ? false : flashEnabled}
       />
 
       <View style={styles.topGradient}>
@@ -223,6 +224,7 @@ export default function CameraCaptureScreen() {
               <MaterialIcons name={flashEnabled ? "flash-on" : "flash-off"} size={24} color="#fff" />
             </View>
             <Text style={styles.sideLabel}>{flashEnabled ? "Flash On" : "Flash Off"}</Text>
+            {Platform.OS === "web" ? <Text style={styles.sideSubLabel}>Browser/device support varies</Text> : null}
           </TouchableOpacity>
         </View>
       </View>
@@ -365,6 +367,7 @@ const createStyles = (colors: ThemeColors) => StyleSheet.create({
     justifyContent: "center",
   },
   sideLabel: { color: "rgba(255,255,255,0.7)", fontSize: 10, fontWeight: "600" },
+  sideSubLabel: { color: "rgba(255,255,255,0.45)", fontSize: 8, textAlign: "center", lineHeight: 10 },
   shutterOuter: {
     width: 78,
     height: 78,

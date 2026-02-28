@@ -41,6 +41,8 @@ export default function LoginScreen({ navigation }: Props) {
   const {
     login,
     signup,
+    resetPassword,
+    loginAsGuest,
     loginWithGoogle,
     loginWithGooglePopup,
     loginWithFacebook,
@@ -102,6 +104,30 @@ export default function LoginScreen({ navigation }: Props) {
     }
   };
 
+  const handleForgotPassword = async () => {
+    const emailTrimmed = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailTrimmed) {
+      Alert.alert("Reset Password", "Please enter your email address first.");
+      return;
+    }
+
+    if (!emailRegex.test(emailTrimmed)) {
+      Alert.alert("Invalid Email", "Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      clearError();
+      await resetPassword(emailTrimmed);
+      Alert.alert("Check Your Email", "Password reset instructions have been sent.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to send reset email";
+      Alert.alert("Reset Failed", msg);
+    }
+  };
+
   const handleFacebookLogin = async () => {
     try {
       clearError();
@@ -119,6 +145,17 @@ export default function LoginScreen({ navigation }: Props) {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Facebook login failed";
       console.error("Facebook login error:", err);
+      Alert.alert("Error", msg);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    try {
+      clearError();
+      await loginAsGuest();
+      navigation.replace(RouteNames.MainTabs);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Guest login failed";
       Alert.alert("Error", msg);
     }
   };
@@ -190,7 +227,7 @@ export default function LoginScreen({ navigation }: Props) {
           </View>
 
           {!isSignup && (
-            <TouchableOpacity style={styles.forgot} disabled={isLoading}>
+            <TouchableOpacity style={styles.forgot} onPress={handleForgotPassword} disabled={isLoading}>
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
           )}
@@ -209,6 +246,17 @@ export default function LoginScreen({ navigation }: Props) {
               </>
             )}
           </TouchableOpacity>
+
+          {!isSignup && (
+            <TouchableOpacity
+              style={styles.guestBtn}
+              onPress={handleGuestLogin}
+              disabled={isLoading}
+            >
+              <MaterialIcons name="person-outline" size={17} color={colors.textMuted} />
+              <Text style={styles.guestText}>Get Started as Guest</Text>
+            </TouchableOpacity>
+          )}
 
           {!isSignup && (
             <>
@@ -399,6 +447,22 @@ const createStyles = (colors: ThemeColors) =>
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  guestBtn: {
+    height: 44,
+    borderRadius: radii.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: spacing.xs,
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.borderGlass,
+  },
+  guestText: {
+    color: colors.textMuted,
+    fontWeight: "600",
+    fontSize: 14,
   },
   orRow: {
     flexDirection: "row",
