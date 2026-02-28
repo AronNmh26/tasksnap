@@ -125,7 +125,7 @@ export default function SettingsScreen() {
             </View>
             <View style={styles.menuContent}>
               <Text style={styles.menuLabel}>Dark Mode</Text>
-              <Text style={styles.menuDetail}>Off</Text>
+              <Text style={styles.menuDetail}>{darkMode ? "On" : "Off"}</Text>
             </View>
             <Switch
               value={darkMode}

@@ -10,10 +10,20 @@ import { useAuthStore } from "../../auth/store/useAuthStore";
 type Props = any;
 
 export default function ProfileScreen() {
-  const { colors } = useTheme();
+  const { colors, mode } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { user, logout } = useAuthStore();
   const navigation = useNavigation<any>();
+
+  const accountLabel =
+    user?.provider === "google"
+      ? "Google Account"
+      : user?.provider === "facebook"
+        ? "Facebook Account"
+        : "Email Account";
+
+  const darkModeStatus = mode === "dark" ? "On" : "Off";
+  const notificationStatus = "Enabled";
 
   const handleLogout = async () => {
     await logout();
@@ -42,7 +52,7 @@ export default function ProfileScreen() {
           <View style={styles.badgeRow}>
             <View style={styles.badge}>
               <MaterialIcons name="verified-user" size={16} color="#10b981" />
-              <Text style={styles.badgeText}>{user?.provider === "email" ? "Email" : "OAuth"}</Text>
+              <Text style={styles.badgeText}>{accountLabel}</Text>
             </View>
           </View>
         </View>
@@ -50,27 +60,25 @@ export default function ProfileScreen() {
         {/* Settings Sections */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Preferences</Text>
-          <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItem}>
             <View style={styles.menuIcon}>
               <MaterialIcons name="palette" size={20} color="#60a5fa" />
             </View>
             <View style={styles.menuContent}>
               <Text style={styles.menuLabel}>Dark Mode</Text>
-              <Text style={styles.menuDetail}>Current: Off</Text>
+              <Text style={styles.menuDetail}>Status: {darkModeStatus}</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={20} color={colors.textSubtle} />
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <View style={styles.menuItem}>
             <View style={styles.menuIcon}>
               <MaterialIcons name="notifications" size={20} color="#fbbf24" />
             </View>
             <View style={styles.menuContent}>
               <Text style={styles.menuLabel}>Notifications</Text>
-              <Text style={styles.menuDetail}>Enabled</Text>
+              <Text style={styles.menuDetail}>Status: {notificationStatus}</Text>
             </View>
-            <MaterialIcons name="chevron-right" size={20} color={colors.textSubtle} />
-          </TouchableOpacity>
+          </View>
         </View>
 
         {/* App Sections */}
