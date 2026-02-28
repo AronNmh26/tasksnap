@@ -20,6 +20,7 @@ export default function TaskReviewScreen() {
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
   const [dueDate, setDueDate] = useState<Date | null>(null);
+  const [pickerDate, setPickerDate] = useState<Date>(new Date());
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -82,7 +83,13 @@ export default function TaskReviewScreen() {
           <Text style={styles.sectionTitle}>Due Date & Time</Text>
         </View>
 
-        <TouchableOpacity style={styles.dateInput} onPress={() => setShowDatePicker(true)}>
+        <TouchableOpacity
+          style={styles.dateInput}
+          onPress={() => {
+            setPickerDate(dueDate || new Date());
+            setShowDatePicker(true);
+          }}
+        >
           <MaterialIcons name="calendar-today" size={20} color={dueDate ? colors.primary : colors.textSubtle} />
           <Text style={[styles.dateText, { color: dueDate ? colors.textPrimary : colors.textSubtle }]}>
             {dueDate ? dueDate.toLocaleString() : "Set due date and time"}
@@ -91,15 +98,42 @@ export default function TaskReviewScreen() {
         </TouchableOpacity>
 
         {showDatePicker && DateTimePicker ? (
-          <DateTimePicker
-            value={dueDate || new Date()}
-            mode="datetime"
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            onChange={(_event: { type?: string }, selectedDate?: Date) => {
-              setShowDatePicker(false);
-              if (selectedDate) setDueDate(selectedDate);
-            }}
-          />
+          Platform.OS === "ios" ? (
+            <View style={styles.iosPickerCard}>
+              <DateTimePicker
+                value={pickerDate}
+                mode="datetime"
+                display="spinner"
+                onChange={(_event: { type?: string }, selectedDate?: Date) => {
+                  if (selectedDate) setPickerDate(selectedDate);
+                }}
+              />
+              <View style={styles.iosPickerActions}>
+                <TouchableOpacity style={styles.iosSecondaryBtn} onPress={() => setShowDatePicker(false)}>
+                  <Text style={styles.iosSecondaryText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iosPrimaryBtn}
+                  onPress={() => {
+                    setDueDate(pickerDate);
+                    setShowDatePicker(false);
+                  }}
+                >
+                  <Text style={styles.iosPrimaryText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <DateTimePicker
+              value={dueDate || new Date()}
+              mode="datetime"
+              display="default"
+              onChange={(event: { type?: string }, selectedDate?: Date) => {
+                setShowDatePicker(false);
+                if (event.type === "set" && selectedDate) setDueDate(selectedDate);
+              }}
+            />
+          )
         ) : null}
 
         <TouchableOpacity
@@ -217,6 +251,38 @@ const createStyles = (colors: ThemeColors) =>
       fontSize: 16,
       fontWeight: "500",
     },
+    iosPickerCard: {
+      marginTop: spacing.sm,
+      borderRadius: radii.md,
+      backgroundColor: colors.glass,
+      borderWidth: 1,
+      borderColor: colors.borderGlass,
+      paddingTop: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      paddingBottom: spacing.md,
+    },
+    iosPickerActions: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    iosSecondaryBtn: {
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: radii.md,
+      borderWidth: 1,
+      borderColor: colors.borderGlass,
+      backgroundColor: colors.glass,
+    },
+    iosSecondaryText: { color: colors.textPrimary, fontWeight: "600" },
+    iosPrimaryBtn: {
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: radii.md,
+      backgroundColor: colors.primary,
+    },
+    iosPrimaryText: { color: "#fff", fontWeight: "700" },
     save: {
       backgroundColor: colors.primary,
       padding: 16,

@@ -65,15 +65,33 @@ export default function DashboardScreen() {
     });
   }, [tasks, selectedDate]);
 
-  const selectedDateLabel = useMemo(
-    () =>
-      selectedDate.toLocaleDateString(undefined, {
+  const selectedDateTitle = useMemo(() => {
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const diffDays = Math.round((selected.getTime() - today.getTime()) / oneDayMs);
+
+    if (diffDays === 0) return "Today";
+    if (diffDays === -1) return "Yesterday";
+    if (diffDays === 1) return "Tomorrow";
+
+    if (selected.getFullYear() === today.getFullYear()) {
+      return selected.toLocaleDateString(undefined, {
+        month: "long",
         day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
-    [selectedDate]
-  );
+      });
+    }
+
+    return selected.toLocaleDateString(undefined, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  }, [selectedDate]);
 
   const handleQuickCreate = async (payload: { title: string; dueAt: string | null; imageUri: string | null }) => {
     try {
@@ -135,8 +153,7 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>{greeting}{user?.name ? `, ${user.name.split(" ")[0]}` : ""}</Text>
-            <Text style={styles.title}>Today</Text>
-            <Text style={styles.filterLabel}>Date: {selectedDateLabel}</Text>
+            <Text style={styles.title}>{selectedDateTitle}</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity style={styles.calendarBtn} onPress={() => setIsMonthPickerOpen(true)}>
@@ -305,11 +322,6 @@ const createStyles = (colors: ThemeColors) =>
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 2,
-  },
-  filterLabel: {
-    color: colors.textSubtle,
-    fontSize: 12,
-    marginTop: 2,
   },
   headerRight: {
     flexDirection: "row",

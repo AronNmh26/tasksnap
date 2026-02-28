@@ -1,18 +1,21 @@
 # TaskSnap
 
-A smart task management app to capture tasks from photos and manage them across devices.
+A cross-platform task management app for quick task capture and daily planning.
 
 Built with **React Native** (Expo) and **Firebase**.
 
 ## Features
 
-- **Camera Capture** — Built-in camera with quick-capture workflow
-- **Smart Categorization** — Tasks are auto-categorized (Cleaning, Laundry, Kitchen, Health, Work, Errands, etc.)
-- **Dashboard** — Time-based greeting, task stats, date filtering, and swipe-to-delete
-- **Authentication** — Email/password, Google OAuth, and Facebook OAuth
-- **Settings** — Default category, reminder preferences, and dark/light theme
+- **Camera Capture** — Built-in camera workflow with flash toggle and gallery import
+- **Task Review** — Review photo task details, set category, and set due date/time before saving
+- **Quick Add Task** — Create tasks without camera; image remains optional
+- **Dashboard** — Dynamic date heading, task stats, date filtering, and swipe-to-delete
+- **Authentication** — Email/password, Google, Facebook, and Guest access
+- **Account Recovery** — Forgot password via Firebase Auth reset email
+- **Settings** — Theme preferences and app settings
 - **Cross-Platform** — Runs on iOS, Android, and Web
 - **Offline-Ready** — Zustand stores with AsyncStorage persistence
+- **Note** — AI photo identification is not included in this version
 
 ## Tech Stack
 
@@ -35,7 +38,7 @@ Built with **React Native** (Expo) and **Firebase**.
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/tasksnap.git
+git clone https://github.com/AronNmh26/tasksnap.git
 cd tasksnap
 npm install
 ```
@@ -80,12 +83,11 @@ tasksnap/
 │   │   ├── ui/                 # AppLogo SVG component
 │   │   └── utils/              # Date helpers
 │   ├── features/
-│   │   ├── ai/screens/         # Task review screen
 │   │   ├── auth/               # Login, auth store (email/Google/Facebook)
 │   │   ├── camera/             # CameraCaptureScreen
 │   │   ├── home/               # HomeScreen, ProfileScreen
 │   │   ├── settings/           # SettingsScreen, settings store
-│   │   └── tasks/              # Dashboard, QuickCapture, TaskDetails, stores
+│   │   └── tasks/              # Dashboard, QuickCapture, TaskReview, TaskDetails, stores
 │   ├── services/
 │   │   ├── db.ts               # Firestore CRUD (native)
 │   │   ├── db.web.ts           # Firestore CRUD (web)
@@ -134,7 +136,7 @@ This project includes `firebase.json` configured for Expo web output (`dist/`) a
 
 4. Google Auth (web) setup in Google Cloud Console:
 - Add `https://tasksnap-bdaa2.web.app` to **Authorized JavaScript origins**
-- Add `https://tasksnap-bdaa2.web.app` to **Authorized redirect URIs**
+- Add `https://tasksnap-bdaa2.web.app/__/auth/handler` to **Authorized redirect URIs**
 
 ## License
 

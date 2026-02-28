@@ -56,6 +56,7 @@ export default function QuickAddTaskModal({ visible, initialDate, onClose, onCre
   const [timePart, setTimePart] = useState<Date>(new Date());
   const [showWebDatePicker, setShowWebDatePicker] = useState(false);
   const [showWebTimePicker, setShowWebTimePicker] = useState(false);
+  const [showImageSourcePicker, setShowImageSourcePicker] = useState(false);
   const [viewMonth, setViewMonth] = useState(new Date(datePart.getFullYear(), datePart.getMonth(), 1));
 
   const reset = () => {
@@ -67,6 +68,7 @@ export default function QuickAddTaskModal({ visible, initialDate, onClose, onCre
     setTimePart(new Date());
     setShowWebDatePicker(false);
     setShowWebTimePicker(false);
+    setShowImageSourcePicker(false);
     setViewMonth(new Date(baseDate.getFullYear(), baseDate.getMonth(), 1));
     setOptionalImageUri(null);
   };
@@ -90,6 +92,21 @@ export default function QuickAddTaskModal({ visible, initialDate, onClose, onCre
   };
 
   const selectImage = async (source: "camera" | "gallery") => {
+    setShowImageSourcePicker(false);
+    if (source === "camera") {
+      const perm = await ImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert("Camera permission needed", "Please allow camera access to capture an image.");
+        return;
+      }
+    } else {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert("Gallery permission needed", "Please allow photo library access to choose an image.");
+        return;
+      }
+    }
+
     const result =
       source === "camera"
         ? await ImagePicker.launchCameraAsync({
@@ -113,11 +130,7 @@ export default function QuickAddTaskModal({ visible, initialDate, onClose, onCre
   };
 
   const openImageOptions = () => {
-    Alert.alert("Add Image", "Choose image source", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Capture from Camera", onPress: () => void selectImage("camera") },
-      { text: "Choose from Gallery", onPress: () => void selectImage("gallery") },
-    ]);
+    setShowImageSourcePicker(true);
   };
 
   const submit = async () => {
@@ -348,6 +361,31 @@ export default function QuickAddTaskModal({ visible, initialDate, onClose, onCre
           </View>
         </Modal>
       ) : null}
+
+      <Modal
+        visible={showImageSourcePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowImageSourcePicker(false)}
+      >
+        <View style={styles.innerBackdrop}>
+          <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setShowImageSourcePicker(false)} />
+          <View style={styles.innerCard}>
+            <Text style={styles.innerTitle}>Add Image</Text>
+            <TouchableOpacity style={styles.sourceOption} onPress={() => void selectImage("camera")}>
+              <MaterialIcons name="photo-camera" size={18} color={colors.primary} />
+              <Text style={styles.sourceOptionText}>Capture from Camera</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.sourceOption} onPress={() => void selectImage("gallery")}>
+              <MaterialIcons name="photo-library" size={18} color={colors.primary} />
+              <Text style={styles.sourceOptionText}>Choose from Gallery</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.closeBtn} onPress={() => setShowImageSourcePicker(false)}>
+              <Text style={styles.closeText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }
@@ -552,6 +590,21 @@ const createStyles = (colors: ThemeColors) =>
     closeText: {
       color: colors.textPrimary,
       fontWeight: "700",
+    },
+    sourceOption: {
+      height: 46,
+      borderRadius: radii.md,
+      alignItems: "center",
+      flexDirection: "row",
+      gap: spacing.sm,
+      paddingHorizontal: spacing.md,
+      backgroundColor: colors.glass,
+      borderWidth: 1,
+      borderColor: colors.borderGlass,
+    },
+    sourceOptionText: {
+      color: colors.textPrimary,
+      fontWeight: "600",
     },
     actions: {
       marginTop: spacing.sm,
