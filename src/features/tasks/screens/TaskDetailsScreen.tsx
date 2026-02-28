@@ -12,6 +12,8 @@ import {
   Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../appRoot/navigation/RootNavigator";
 import { RouteNames } from "../../../appRoot/navigation/routes";
@@ -22,8 +24,9 @@ import { Task } from "../../../core/types/task";
 import { cancelReminder, scheduleTaskReminder } from "../../../services/notifications";
 import { ThemeColors, radii, spacing, shadows } from "../../../core/theme/theme";
 import { useTheme } from "../../../core/theme/ThemeProvider";
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { deleteAsync } from 'expo-file-system/legacy';
+const DateTimePicker: any =
+  Platform.OS === "web" ? null : require("@react-native-community/datetimepicker").default;
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof RouteNames.TaskDetails>;
 
@@ -37,6 +40,10 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
   const [category, setCategory] = useState("");
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [status, setStatus] = useState<Task["status"]>("pending");
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     getTaskById(taskId).then((t) => {
@@ -45,11 +52,24 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
         setTitle(t.title);
         setCategory(t.category ?? "");
         setDueDate(t.dueAt ? new Date(t.dueAt) : null);
+        setStatus(t.status);
+        setImageUri(t.imageUri ?? null);
+        setImageUrl(t.imageUrl ?? null);
       }
     });
   }, [taskId]);
 
   const canToggle = useMemo(() => !!task, [task]);
+  const displayedImage = imageUri ?? imageUrl;
+
+  const resetFromTask = (currentTask: Task) => {
+    setTitle(currentTask.title);
+    setCategory(currentTask.category ?? "");
+    setDueDate(currentTask.dueAt ? new Date(currentTask.dueAt) : null);
+    setStatus(currentTask.status);
+    setImageUri(currentTask.imageUri ?? null);
+    setImageUrl(currentTask.imageUrl ?? null);
+  };
 
   const onSave = async () => {
     if (!task) return;
@@ -58,10 +78,14 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
       title: title.trim() || task.title,
       category: category.trim() || null,
       dueAt: dueDate?.toISOString() || null,
+      status,
+      imageUri,
+      imageUrl,
       updatedAt: nowIso(),
     };
     await save(updated);
-    navigation.goBack();
+    setTask(updated);
+    setIsEditing(false);
   };
 
   const onToggleDone = async () => {
@@ -81,6 +105,7 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
 
     await save(updated);
     setTask(updated);
+    setStatus(updated.status);
   };
 
   const onAddDemoReminder = async () => {
@@ -118,7 +143,7 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
   };
 
   const onDeletePhoto = async () => {
-    if (!task || !task.imageUri) return;
+    if (!task || !displayedImage) return;
 
     Alert.alert(
       "Delete Photo",
@@ -130,19 +155,23 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
           style: "destructive",
           onPress: async () => {
             try {
-              // Delete the file from local storage
-              await deleteAsync(task.imageUri!, { idempotent: true });
+              if (imageUri) {
+                await deleteAsync(imageUri, { idempotent: true });
+              }
 
               // Update the task to remove the imageUri
               const updated: Task = {
                 ...task,
                 imageUri: null,
+                imageUrl: null,
                 updatedAt: nowIso(),
               };
 
               // Save the updated task
               await save(updated);
               setTask(updated);
+              setImageUri(null);
+              setImageUrl(null);
             } catch (error) {
               console.error("Error deleting photo:", error);
               Alert.alert("Error", "Failed to delete photo. Please try again.");
@@ -151,6 +180,52 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
         },
       ]
     );
+  };
+
+  const copyToPermanentStorage = async (sourceUri: string, prefix: string): Promise<string> => {
+    const ext = sourceUri.split(".").pop()?.split("?")[0] || "jpg";
+    const fileName = `${prefix}_${Date.now()}.${ext}`;
+    const permanentUri = `${(FileSystem as any).documentDirectory}${fileName}`;
+    await FileSystem.copyAsync({ from: sourceUri, to: permanentUri });
+    return permanentUri;
+  };
+
+  const onPickImageFromGallery = async () => {
+    if (!isEditing) return;
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsEditing: false,
+    });
+    if (result.canceled || !result.assets?.[0]?.uri) return;
+
+    try {
+      const uri = await copyToPermanentStorage(result.assets[0].uri, "task_detail_gallery");
+      setImageUri(uri);
+      setImageUrl(null);
+    } catch {
+      setImageUri(result.assets[0].uri);
+      setImageUrl(null);
+    }
+  };
+
+  const onCaptureImageWithCamera = async () => {
+    if (!isEditing) return;
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsEditing: false,
+    });
+    if (result.canceled || !result.assets?.[0]?.uri) return;
+
+    try {
+      const uri = await copyToPermanentStorage(result.assets[0].uri, "task_detail_camera");
+      setImageUri(uri);
+      setImageUrl(null);
+    } catch {
+      setImageUri(result.assets[0].uri);
+      setImageUrl(null);
+    }
   };
 
   if (!task) {
@@ -195,6 +270,7 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
               style={styles.titleInput}
               placeholder="Task title"
               placeholderTextColor={colors.textSubtle}
+              editable={isEditing}
             />
           </View>
 
@@ -208,10 +284,15 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
               placeholder="Category"
               placeholderTextColor={colors.textSubtle}
               style={styles.subtitleInput}
+              editable={isEditing}
             />
           </View>
 
-          <TouchableOpacity style={styles.dateInput} onPress={() => setShowPicker(true)}>
+          <TouchableOpacity
+            style={styles.dateInput}
+            onPress={() => isEditing && setShowPicker(true)}
+            disabled={!isEditing}
+          >
             <View style={styles.inputIcon}>
               <MaterialIcons name="event" size={20} color={dueDate ? colors.primary : colors.textSubtle} />
             </View>
@@ -220,12 +301,12 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
             </Text>
             <MaterialIcons name="arrow-drop-down" size={20} color={colors.textSubtle} />
           </TouchableOpacity>
-          {showPicker && (
+          {showPicker && DateTimePicker && (
             <DateTimePicker
               value={dueDate || new Date()}
               mode="datetime"
               display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(event, selectedDate) => {
+              onChange={(event: { type?: string }, selectedDate?: Date) => {
                 setShowPicker(false);
                 if (selectedDate) setDueDate(selectedDate);
               }}
@@ -238,44 +319,65 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
             <Text style={styles.statusLabel}>Status</Text>
             <View style={styles.statusPill}>
               <MaterialIcons
-                name={task.status === "completed" ? "check-circle" : "hourglass-empty"}
+                name={status === "completed" ? "check-circle" : "hourglass-empty"}
                 size={16}
-                color={task.status === "completed" ? "#10b981" : "#facc15"}
+                color={status === "completed" ? "#10b981" : "#facc15"}
               />
               <Text
                 style={
-                  task.status === "completed" ? styles.statusDoneText : styles.statusPendingText
+                  status === "completed" ? styles.statusDoneText : styles.statusPendingText
                 }
               >
-                {task.status === "completed" ? "Completed" : "Pending"}
+                {status === "completed" ? "Completed" : "Pending"}
               </Text>
             </View>
           </View>
+
+          {isEditing ? (
+            <View style={styles.statusActions}>
+              <TouchableOpacity
+                style={[styles.statusActionBtn, status === "pending" && styles.statusActionBtnActive]}
+                onPress={() => setStatus("pending")}
+              >
+                <Text style={[styles.statusActionText, status === "pending" && styles.statusActionTextActive]}>
+                  Pending
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.statusActionBtn, status === "completed" && styles.statusActionBtnActive]}
+                onPress={() => setStatus("completed")}
+              >
+                <Text style={[styles.statusActionText, status === "completed" && styles.statusActionTextActive]}>
+                  Completed
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
 
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
               <MaterialIcons name="calendar-today" size={18} color="#f87171" />
               <View>
                 <Text style={styles.metaLabel}>Deadline</Text>
-                <Text style={styles.metaValue}>{toLocalReadable(task.dueAt)}</Text>
+                <Text style={styles.metaValue}>{toLocalReadable(dueDate?.toISOString() ?? null)}</Text>
               </View>
             </View>
             <View style={styles.metaItem}>
               <MaterialIcons name="school" size={18} color="#34d399" />
               <View>
                 <Text style={styles.metaLabel}>Category</Text>
-                <Text style={styles.metaValue}>{task.category ?? "General"}</Text>
+                <Text style={styles.metaValue}>{category || "General"}</Text>
               </View>
             </View>
           </View>
         </View>
 
-        {(task.imageUri || task.imageUrl) ? (
+        {displayedImage ? (
           <View style={styles.imageCard}>
-            <Image source={{ uri: (task.imageUri ?? task.imageUrl)! }} style={styles.image} />
+            <Image source={{ uri: displayedImage }} style={styles.image} />
             <View style={styles.imageTag}>
               <MaterialIcons name="photo-camera" size={14} color="#fff" />
-              <Text style={styles.imageTagText}>Captured Image</Text>
+              <Text style={styles.imageTagText}>Task Image</Text>
             </View>
             <TouchableOpacity style={styles.deletePhotoBtn} onPress={onDeletePhoto}>
               <MaterialIcons name="delete" size={20} color="#fff" />
@@ -293,6 +395,19 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
           </View>
         )}
 
+        {isEditing ? (
+          <View style={styles.imageActionsRow}>
+            <TouchableOpacity style={styles.utilityBtn} onPress={onPickImageFromGallery}>
+              <MaterialIcons name="photo-library" size={18} color={colors.textPrimary} />
+              <Text style={styles.utilityText}>Upload Photo</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.utilityBtn} onPress={onCaptureImageWithCamera}>
+              <MaterialIcons name="photo-camera" size={18} color={colors.textPrimary} />
+              <Text style={styles.utilityText}>Capture Photo</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
         <View style={styles.utilityRow}>
           <TouchableOpacity style={styles.utilityBtn} onPress={onAddDemoReminder}>
             <MaterialIcons name="alarm" size={18} color={colors.textPrimary} />
@@ -306,14 +421,26 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
       </ScrollView>
 
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.secondaryBtn} onPress={onSave} disabled={!canToggle}>
-          <MaterialIcons name="edit" size={18} color={colors.textPrimary} />
-          <Text style={styles.secondaryText}>Edit Task</Text>
+        <TouchableOpacity
+          style={styles.secondaryBtn}
+          onPress={() => {
+            if (!task) return;
+            if (isEditing) {
+              resetFromTask(task);
+              setIsEditing(false);
+              return;
+            }
+            setIsEditing(true);
+          }}
+          disabled={!canToggle}
+        >
+          <MaterialIcons name={isEditing ? "close" : "edit"} size={18} color={colors.textPrimary} />
+          <Text style={styles.secondaryText}>{isEditing ? "Cancel Edit" : "Edit Task"}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.primaryBtn} onPress={onToggleDone}>
-          <MaterialIcons name="check" size={18} color="#fff" />
+        <TouchableOpacity style={styles.primaryBtn} onPress={isEditing ? onSave : onToggleDone}>
+          <MaterialIcons name={isEditing ? "save" : "check"} size={18} color="#fff" />
           <Text style={styles.primaryText}>
-            {task.status === "completed" ? "Mark Pending" : "Mark as Done"}
+            {isEditing ? "Save Changes" : task.status === "completed" ? "Mark Pending" : "Mark as Done"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -351,6 +478,11 @@ const createStyles = (colors: ThemeColors) =>
     statusPill: { ...rowCenter, gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: radii.pill, backgroundColor: colors.surfaceAlt, ...glassBorder(colors) },
     statusPendingText: { color: "#facc15", fontSize: 11, fontWeight: "700" },
     statusDoneText: { color: "#10b981", fontSize: 11, fontWeight: "700" },
+    statusActions: { flexDirection: "row", gap: spacing.sm },
+    statusActionBtn: { flex: 1, paddingVertical: 8, borderRadius: radii.md, alignItems: "center", backgroundColor: colors.surfaceAlt, ...glassBorder(colors) },
+    statusActionBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+    statusActionText: { color: colors.textPrimary, fontSize: 12, fontWeight: "700" },
+    statusActionTextActive: { color: "#fff" },
     metaRow: { flexDirection: "row", gap: spacing.sm },
     metaItem: { flex: 1, flexDirection: "row", gap: spacing.sm, padding: spacing.sm, borderRadius: radii.md, backgroundColor: colors.surfaceAlt, ...glassBorder(colors) },
     metaLabel: { color: colors.textSubtle, fontSize: 10, textTransform: "uppercase" },
@@ -362,6 +494,7 @@ const createStyles = (colors: ThemeColors) =>
     imageTagText: { color: "#fff", fontSize: 11, fontWeight: "600" },
     deletePhotoBtn: { position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(239,68,68,0.8)", alignItems: "center", justifyContent: "center" },
     utilityRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
+    imageActionsRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.md },
     utilityBtn: { ...btnBase(colors), backgroundColor: colors.glass },
     utilityBtnDanger: { ...btnBase(colors), backgroundColor: "rgba(239,68,68,0.2)", borderColor: "rgba(239,68,68,0.4)" },
     utilityText: { color: colors.textPrimary, fontWeight: "700", fontSize: 12 },

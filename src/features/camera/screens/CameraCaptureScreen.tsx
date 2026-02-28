@@ -4,7 +4,6 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from 'expo-file-system';
-import { readAsStringAsync } from 'expo-file-system/legacy';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RouteNames } from "../../../appRoot/navigation/routes";
@@ -125,12 +124,11 @@ export default function CameraCaptureScreen() {
         }
       }
 
-      console.log('🎯 Navigating to AI Review with permanent local image...');
+      console.log('🎯 Navigating to task review with permanent local image...');
 
       // Navigate with the permanent local URI (no base64 needed)
-      navigation.navigate(RouteNames.AiReview, {
+      navigation.navigate(RouteNames.TaskReview, {
         imageUri: photoUri,  // Permanent local file path
-        imageBase64: null,   // Not needed for local storage
         selectedDateIso
       });
 
@@ -140,9 +138,8 @@ export default function CameraCaptureScreen() {
       console.error("❌ Failed to save photo:", err);
       // Still try to navigate even if base64 conversion fails
       try {
-        navigation.navigate(RouteNames.AiReview, {
+        navigation.navigate(RouteNames.TaskReview, {
           imageUri: photoUri,
-          imageBase64: null,
           selectedDateIso
         });
       } catch (navErr) {
@@ -179,7 +176,13 @@ export default function CameraCaptureScreen() {
   // Camera mode
   return (
     <View style={styles.container}>
-      <CameraView ref={cameraRef} style={styles.camera} flash={flashEnabled ? "on" : "off"} />
+      <CameraView
+        ref={cameraRef}
+        style={styles.camera}
+        // Keep flash mode for photo capture and enable torch for live preview.
+        flash={flashEnabled ? "on" : "off"}
+        enableTorch={flashEnabled}
+      />
 
       <View style={styles.topGradient}>
         <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
@@ -199,8 +202,8 @@ export default function CameraCaptureScreen() {
 
       <View style={styles.bottomOverlay}>
         <View style={styles.aiHint}>
-          <MaterialIcons name="smart-toy" size={16} color={colors.primary} />
-          <Text style={styles.aiHintText}>AI will analyze your photo to suggest task details</Text>
+          <MaterialIcons name="photo-camera" size={16} color={colors.primary} />
+          <Text style={styles.aiHintText}>Capture a photo, then enter task details on the next screen</Text>
         </View>
 
         <View style={styles.controlsRow}>

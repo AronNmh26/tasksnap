@@ -26,10 +26,8 @@ export default function SettingsScreen() {
 
   const {
     defaultCategory,
-    aiAutoSuggest,
     defaultReminderMinutes,
     showCompletedTasks,
-    isLoaded,
     loadSettings,
     updateSetting,
   } = useSettingsStore();
@@ -242,26 +240,6 @@ export default function SettingsScreen() {
               onValueChange={(v) => updateSetting("showCompletedTasks", v)}
               trackColor={{ false: colors.surfaceAlt, true: colors.primary }}
               thumbColor={showCompletedTasks ? "#93c5fd" : "#94a3b8"}
-            />
-          </View>
-        </View>
-
-        {/* AI Settings */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>AI & Smart Features</Text>
-          <View style={styles.menuItem}>
-            <View style={styles.menuIcon}>
-              <MaterialIcons name="auto-awesome" size={20} color="#fbbf24" />
-            </View>
-            <View style={styles.menuContent}>
-              <Text style={styles.menuLabel}>Auto AI Suggestions</Text>
-              <Text style={styles.menuDetail}>Analyze photos automatically</Text>
-            </View>
-            <Switch
-              value={aiAutoSuggest}
-              onValueChange={(v) => updateSetting("aiAutoSuggest", v)}
-              trackColor={{ false: colors.surfaceAlt, true: colors.primary }}
-              thumbColor={aiAutoSuggest ? "#93c5fd" : "#94a3b8"}
             />
           </View>
         </View>

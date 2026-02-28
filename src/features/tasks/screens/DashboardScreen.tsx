@@ -6,11 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Animated,
+  Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RouteNames } from "../../../appRoot/navigation/routes";
 import { useTasksStore } from "../store/useTasksStore";
 import { toLocalReadable } from "../../../core/utils/date";
@@ -19,15 +18,19 @@ import { useTheme } from "../../../core/theme/ThemeProvider";
 import { DatePickerChips } from "../../../core/components/DatePickerChips";
 import { useAuthStore } from "../../auth/store/useAuthStore";
 import { Swipeable } from 'react-native-gesture-handler';
-
-type Props = any; // Dashboard is now inside MainTabsNavigator, so it doesn't have RootStackParamList props
+import { Task } from "../../../core/types/task";
+import { nowIso } from "../../../core/utils/date";
+import QuickAddTaskModal from "../components/QuickAddTaskModal";
+import MonthYearPickerModal from "../components/MonthYearPickerModal";
 
 export default function DashboardScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { tasks, refresh, remove } = useTasksStore();
+  const { tasks, refresh, remove, save } = useTasksStore();
   const navigation = useNavigation<any>();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isMonthPickerOpen, setIsMonthPickerOpen] = useState(false);
   const { user } = useAuthStore();
 
   // Greeting based on time of day
@@ -42,7 +45,7 @@ export default function DashboardScreen() {
     refresh().catch(console.error);
   }, [refresh]);
 
-  // Filter tasks by selected date
+  // Filter tasks by selected date.
   const filteredTasks = useMemo(() => {
     return tasks.filter((task) => {
       if (!task.dueAt) {
@@ -61,6 +64,40 @@ export default function DashboardScreen() {
       );
     });
   }, [tasks, selectedDate]);
+
+  const selectedDateLabel = useMemo(
+    () =>
+      selectedDate.toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+    [selectedDate]
+  );
+
+  const handleQuickCreate = async (payload: { title: string; dueAt: string | null; imageUri: string | null }) => {
+    try {
+      const now = nowIso();
+      const task: Task = {
+        id: `${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        title: payload.title,
+        category: "General",
+        dueAt: payload.dueAt,
+        reminderMinutes: null,
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+        notificationId: null,
+        imageUri: payload.imageUri,
+        imageBase64: null,
+      };
+      await save(task);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to create task";
+      Alert.alert("Error", msg);
+      throw err;
+    }
+  };
 
   const renderRightActions = (taskId: string) => (
     <TouchableOpacity
@@ -99,21 +136,30 @@ export default function DashboardScreen() {
           <View>
             <Text style={styles.greeting}>{greeting}{user?.name ? `, ${user.name.split(" ")[0]}` : ""}</Text>
             <Text style={styles.title}>Today</Text>
+            <Text style={styles.filterLabel}>Date: {selectedDateLabel}</Text>
           </View>
-          <View style={styles.statsRow}>
-            <View style={styles.statBadge}>
-              <Text style={styles.statNumber}>{filteredTasks.length}</Text>
-              <Text style={styles.statLabel}>Tasks</Text>
-            </View>
-            <View style={styles.statBadge}>
-              <Text style={styles.statNumber}>{filteredTasks.filter(t => t.status === "completed").length}</Text>
-              <Text style={styles.statLabel}>Done</Text>
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.calendarBtn} onPress={() => setIsMonthPickerOpen(true)}>
+              <MaterialIcons name="calendar-month" size={20} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <View style={styles.statsRow}>
+              <View style={styles.statBadge}>
+                <Text style={styles.statNumber}>{filteredTasks.length}</Text>
+                <Text style={styles.statLabel}>Tasks</Text>
+              </View>
+              <View style={styles.statBadge}>
+                <Text style={styles.statNumber}>{filteredTasks.filter(t => t.status === "completed").length}</Text>
+                <Text style={styles.statLabel}>Done</Text>
+              </View>
             </View>
           </View>
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-          <DatePickerChips selectedDate={selectedDate} onDateChange={setSelectedDate} />
+          <DatePickerChips
+            selectedDate={selectedDate}
+            onDateChange={setSelectedDate}
+          />
         </ScrollView>
 
         <View style={styles.sectionHeader}>
@@ -128,18 +174,27 @@ export default function DashboardScreen() {
                 <MaterialIcons name="lightbulb" size={48} color={colors.primary} />
               </View>
               <Text style={styles.emptyTitle}>Ready to capture your day?</Text>
-              <Text style={styles.emptyText}>Take a photo of your tasks or add them manually to get started.</Text>
-              <TouchableOpacity
-                style={styles.primaryAction}
-                onPress={() =>
-                  navigation.navigate(RouteNames.CameraCapture, {
-                    selectedDateIso: selectedDate.toISOString(),
-                  })
-                }
-              >
-                <MaterialIcons name="add-a-photo" size={20} color="#fff" />
-                <Text style={styles.primaryActionText}>Capture Task</Text>
-              </TouchableOpacity>
+              <Text style={styles.emptyText}>Add a task quickly or capture one with your camera.</Text>
+              <View style={styles.emptyActionsRow}>
+                <TouchableOpacity
+                  style={styles.secondaryAction}
+                  onPress={() => setIsQuickAddOpen(true)}
+                >
+                  <MaterialIcons name="add" size={20} color={colors.textPrimary} />
+                  <Text style={styles.secondaryActionText}>Quick Add Task</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.primaryAction}
+                  onPress={() =>
+                    navigation.navigate(RouteNames.CameraCapture, {
+                      selectedDateIso: selectedDate.toISOString(),
+                    })
+                  }
+                >
+                  <MaterialIcons name="add-a-photo" size={20} color="#fff" />
+                  <Text style={styles.primaryActionText}>Capture Task</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
@@ -181,20 +236,35 @@ export default function DashboardScreen() {
           ))}
         </View>
 
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={styles.primaryAction}
-            onPress={() =>
-              navigation.navigate(RouteNames.QuickCapture, {
-                selectedDateIso: selectedDate.toISOString(),
-              })
-            }
-          >
-            <MaterialIcons name="add" size={20} color="#fff" />
-            <Text style={styles.primaryActionText}>Quick Add Task</Text>
-          </TouchableOpacity>
-        </View>
+        {focusTasks.length > 0 ? (
+          <View style={styles.actionsRow}>
+            <TouchableOpacity
+              style={styles.primaryAction}
+              onPress={() => setIsQuickAddOpen(true)}
+            >
+              <MaterialIcons name="add" size={20} color="#fff" />
+              <Text style={styles.primaryActionText}>Quick Add Task</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </ScrollView>
+
+      <QuickAddTaskModal
+        visible={isQuickAddOpen}
+        initialDate={selectedDate}
+        onClose={() => setIsQuickAddOpen(false)}
+        onCreate={handleQuickCreate}
+      />
+
+      <MonthYearPickerModal
+        visible={isMonthPickerOpen}
+        initialDate={selectedDate}
+        onClose={() => setIsMonthPickerOpen(false)}
+        onApply={(date) => {
+          setSelectedDate(date);
+          setIsMonthPickerOpen(false);
+        }}
+      />
     </View>
   );
 }
@@ -235,6 +305,26 @@ const createStyles = (colors: ThemeColors) =>
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 2,
+  },
+  filterLabel: {
+    color: colors.textSubtle,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  calendarBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.glass,
+    borderWidth: 1,
+    borderColor: colors.borderGlass,
   },
   statsRow: {
     flexDirection: "row",
@@ -378,6 +468,11 @@ const createStyles = (colors: ThemeColors) =>
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,
+  },
+  emptyActionsRow: {
+    width: "100%",
+    flexDirection: "row",
+    gap: spacing.sm,
   },
   actionsRow: {
     marginTop: spacing.lg,

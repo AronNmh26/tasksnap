@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-import * as Facebook from "expo-auth-session/providers/facebook";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../appRoot/navigation/RootNavigator";
@@ -20,16 +18,18 @@ import { ThemeColors, radii, spacing, shadows } from "../../../core/theme/theme"
 import { useTheme } from "../../../core/theme/ThemeProvider";
 import { useAuthStore } from "../store/useAuthStore";
 import AppLogo from "../../../core/ui/AppLogo";
+import {
+  isExpoGo,
+  configureNativeGoogleSignIn,
+  nativeSignIn,
+  isNativeGoogleAvailable,
+  expoGoSignIn,
+} from "../../../services/googleAuth";
+import { facebookSignIn } from "../../../services/facebookAuth";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof RouteNames.Login>;
 
-WebBrowser.maybeCompleteAuthSession();
-
-const WEB_CLIENT_ID =
-  "911003774738-2u84b0mrdifshcj2h56vubqetntv26ig.apps.googleusercontent.com";
-
-// Facebook App ID — replace with your own from developers.facebook.com
-const FACEBOOK_APP_ID = "YOUR_FACEBOOK_APP_ID";
+const IS_NATIVE = Platform.OS !== "web";
 
 export default function LoginScreen({ navigation }: Props) {
   const { colors } = useTheme();
@@ -38,19 +38,25 @@ export default function LoginScreen({ navigation }: Props) {
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
-  const { login, signup, loginWithGoogle, loginWithFacebook, isLoading, error, clearError } = useAuthStore();
+  const {
+    login,
+    signup,
+    loginWithGoogle,
+    loginWithGooglePopup,
+    loginWithFacebook,
+    loginWithFacebookPopup,
+    isLoading,
+    error,
+    clearError,
+  } = useAuthStore();
 
-  const [request, , promptAsync] = Google.useAuthRequest({
-    clientId: WEB_CLIENT_ID,
-    scopes: ["profile", "email"],
-    responseType: "id_token",
-  });
-
-  const [fbRequest, , fbPromptAsync] = Facebook.useAuthRequest({
-    clientId: FACEBOOK_APP_ID,
-    scopes: ["public_profile", "email"],
-    responseType: "token",
-  });
+  // ── Native: configure Google Sign-In once (skipped in Expo Go) ──
+  const useNativeGoogle = IS_NATIVE && isNativeGoogleAvailable();
+  useEffect(() => {
+    if (useNativeGoogle) {
+      configureNativeGoogleSignIn();
+    }
+  }, [useNativeGoogle]);
 
   const handleSubmit = async () => {
     try {
@@ -70,20 +76,28 @@ export default function LoginScreen({ navigation }: Props) {
   const handleGoogleLogin = async () => {
     try {
       clearError();
-      const result = await promptAsync();
-      if (result.type !== "success") {
-        throw new Error("Google login cancelled");
-      }
 
-      const idToken = (result.params as { id_token?: string }).id_token;
-      if (!idToken) {
-        throw new Error("Google id_token missing");
+      if (Platform.OS === "web") {
+        // Web uses Firebase Auth popup flow; no custom redirect URI needed.
+        await loginWithGooglePopup();
+        navigation.replace(RouteNames.MainTabs);
+      } else if (useNativeGoogle) {
+        // ── Native path: @react-native-google-signin/google-signin ──
+        const idToken = await nativeSignIn();
+        if (!idToken) throw new Error("Google id_token missing");
+        await loginWithGoogle(idToken);
+        navigation.replace(RouteNames.MainTabs);
+      } else if (isExpoGo) {
+        // ── Expo Go on iOS/Android: manual OAuth + PKCE ──
+        const { idToken, accessToken } = await expoGoSignIn();
+        await loginWithGoogle(idToken, accessToken || null);
+        navigation.replace(RouteNames.MainTabs);
+      } else {
+        throw new Error("Google Sign-In is not available in this build.");
       }
-
-      await loginWithGoogle(idToken);
-      navigation.replace(RouteNames.MainTabs);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Google login failed";
+      console.error("Google login error:", err);
       Alert.alert("Error", msg);
     }
   };
@@ -91,23 +105,25 @@ export default function LoginScreen({ navigation }: Props) {
   const handleFacebookLogin = async () => {
     try {
       clearError();
-      const result = await fbPromptAsync();
-      if (result.type !== "success") {
-        throw new Error("Facebook login cancelled");
+
+      if (Platform.OS === "web") {
+        // Web uses Firebase Auth popup flow; no custom redirect URI needed.
+        await loginWithFacebookPopup();
+      } else {
+        // Native uses manual OAuth flow to obtain Facebook access token.
+        const accessToken = await facebookSignIn();
+        await loginWithFacebook(accessToken);
       }
 
-      const accessToken = (result.params as { access_token?: string }).access_token;
-      if (!accessToken) {
-        throw new Error("Facebook access_token missing");
-      }
-
-      await loginWithFacebook(accessToken);
       navigation.replace(RouteNames.MainTabs);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Facebook login failed";
+      console.error("Facebook login error:", err);
       Alert.alert("Error", msg);
     }
   };
+
+
 
   return (
     <View style={styles.screen}>
@@ -205,15 +221,19 @@ export default function LoginScreen({ navigation }: Props) {
               <TouchableOpacity
                 style={styles.socialBtn}
                 onPress={handleGoogleLogin}
-                disabled={isLoading || !request}
+                disabled={isLoading}
               >
                 <FontAwesome name="google" size={18} color={colors.textPrimary} />
                 <Text style={styles.socialText}>Continue with Google</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.socialBtn} onPress={handleFacebookLogin} disabled={isLoading || !fbRequest}>
-                <FontAwesome name="facebook" size={18} color="#1877F2" />
-                <Text style={styles.socialText}>Continue with Facebook</Text>
+              <TouchableOpacity
+                style={[styles.socialBtn, styles.facebookBtn]}
+                onPress={handleFacebookLogin}
+                disabled={isLoading}
+              >
+                <FontAwesome name="facebook" size={18} color="#fff" />
+                <Text style={[styles.socialText, styles.facebookText]}>Continue with Facebook</Text>
               </TouchableOpacity>
             </>
           )}
@@ -410,6 +430,13 @@ const createStyles = (colors: ThemeColors) =>
   socialText: {
     color: colors.textPrimary,
     fontWeight: "600",
+  },
+  facebookBtn: {
+    backgroundColor: "#1877F2",
+    borderColor: "#1877F2",
+  },
+  facebookText: {
+    color: "#fff",
   },
   footer: {
     marginTop: spacing.lg,

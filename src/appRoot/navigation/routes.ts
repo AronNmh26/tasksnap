@@ -2,7 +2,7 @@ export const RouteNames = {
   Login: "Login",
   Dashboard: "Dashboard",
   QuickCapture: "QuickCapture",
-  AiReview: "AiReview",
+  TaskReview: "TaskReview",
   CameraCapture: "CameraCapture",
   Review: "Review",
   TaskDetails: "TaskDetails",

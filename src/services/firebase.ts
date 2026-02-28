@@ -12,5 +12,8 @@ const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
+// Note: Firebase shows a warning about AsyncStorage persistence on RN.
+// Auth state is already persisted manually via AsyncStorage in useAuthStore,
+// so the default memory persistence is fine here.
 export const auth = getAuth(app);
 export const db = getFirestore(app);

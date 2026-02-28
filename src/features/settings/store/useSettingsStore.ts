@@ -5,7 +5,6 @@ const STORAGE_KEY = "@app_settings";
 
 export interface AppSettings {
   defaultCategory: string;
-  aiAutoSuggest: boolean;
   defaultReminderMinutes: number;
   showCompletedTasks: boolean;
 }
@@ -18,7 +17,6 @@ interface SettingsState extends AppSettings {
 
 const DEFAULT_SETTINGS: AppSettings = {
   defaultCategory: "General",
-  aiAutoSuggest: true,
   defaultReminderMinutes: 15,
   showCompletedTasks: true,
 };
@@ -47,7 +45,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
       const state = get();
       const toSave: AppSettings = {
         defaultCategory: state.defaultCategory,
-        aiAutoSuggest: state.aiAutoSuggest,
         defaultReminderMinutes: state.defaultReminderMinutes,
         showCompletedTasks: state.showCompletedTasks,
       };

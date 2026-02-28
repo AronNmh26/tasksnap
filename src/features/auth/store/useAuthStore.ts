@@ -1,6 +1,7 @@
 // src/features/auth/store/useAuthStore.ts
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -11,6 +12,7 @@ import {
   GoogleAuthProvider,
   FacebookAuthProvider,
   signInWithCredential,
+  signInWithPopup,
 } from "firebase/auth";
 import { auth } from "../../../services/firebase";
 
@@ -29,8 +31,10 @@ interface AuthState {
   isSessionChecked: boolean;
 
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithGoogle: (idToken: string | null, accessToken?: string | null) => Promise<void>;
+  loginWithGooglePopup: () => Promise<void>;
   loginWithFacebook: (accessToken: string) => Promise<void>;
+  loginWithFacebookPopup: () => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -118,12 +122,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // ✅ Google login (idToken obtained from UI layer)
-  loginWithGoogle: async (idToken) => {
+  // ✅ Google login (idToken or accessToken obtained from UI layer)
+  loginWithGoogle: async (idToken, accessToken) => {
+    set({ isLoading: true, error: null });    
+    try {
+      const credential = GoogleAuthProvider.credential(idToken ?? null, accessToken ?? undefined);
+      const res = await signInWithCredential(auth, credential);
+
+      const mapped = mapFirebaseUser(res.user);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+
+      set({ user: mapped, isSessionChecked: true });
+    } catch (err: any) {
+      const message = err?.message ?? "Google login failed";
+      set({ error: message, isSessionChecked: true });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // ✅ Web Google login via Firebase popup (no custom redirect URI)
+  loginWithGooglePopup: async () => {
     set({ isLoading: true, error: null });
     try {
-      const credential = GoogleAuthProvider.credential(idToken);
-      const res = await signInWithCredential(auth, credential);
+      if (Platform.OS !== "web") {
+        throw new Error("Google popup login is only available on web.");
+      }
+
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const res = await signInWithPopup(auth, provider);
 
       const mapped = mapFirebaseUser(res.user);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
@@ -144,6 +173,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const credential = FacebookAuthProvider.credential(accessToken);
       const res = await signInWithCredential(auth, credential);
+
+      const mapped = mapFirebaseUser(res.user);
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+
+      set({ user: mapped, isSessionChecked: true });
+    } catch (err: any) {
+      const message = err?.message ?? "Facebook login failed";
+      set({ error: message, isSessionChecked: true });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // ✅ Web Facebook login via Firebase popup (no custom redirect URI)
+  loginWithFacebookPopup: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      if (Platform.OS !== "web") {
+        throw new Error("Facebook popup login is only available on web.");
+      }
+
+      const provider = new FacebookAuthProvider();
+      const res = await signInWithPopup(auth, provider);
 
       const mapped = mapFirebaseUser(res.user);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
