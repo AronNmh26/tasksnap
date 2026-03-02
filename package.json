@@ -11,7 +11,12 @@
     "ios:tunnel": "expo start --ios --tunnel",
     "web": "expo start --web",
     "export:web": "expo export -p web",
-    "deploy:firebase": "npm run export:web && npx firebase-tools deploy --only hosting"
+    "deploy:firebase": "npm run export:web && npx firebase-tools deploy --only hosting",
+    "functions:install": "npm --prefix functions install",
+    "functions:build": "npm --prefix functions run build",
+    "functions:serve": "npm run functions:build && npx firebase-tools emulators:start --only functions",
+    "functions:deploy": "npm run functions:build && npx firebase-tools deploy --only functions",
+    "deploy:all": "npm run export:web && npx firebase-tools deploy --only hosting,functions"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

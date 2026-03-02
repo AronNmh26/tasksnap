@@ -27,6 +27,7 @@ Built with **React Native** (Expo) and **Firebase**.
 | State | Zustand 5 |
 | Navigation | React Navigation 7 (native-stack + bottom-tabs) |
 | UI | Custom themed components, react-native-svg |
+| Backend | Firebase Cloud Functions (Node.js + TypeScript) |
 
 ## Getting Started
 
@@ -110,6 +111,47 @@ tasksnap/
 | `npm run android:tunnel` | Start Android with tunnel |
 | `npm run export:web` | Export static web build to `dist/` |
 | `npm run deploy:firebase` | Export web build and deploy Firebase Hosting |
+| `npm run functions:install` | Install backend dependencies |
+| `npm run functions:build` | Compile backend TypeScript |
+| `npm run functions:serve` | Run Cloud Functions emulator |
+| `npm run functions:deploy` | Deploy backend functions |
+| `npm run deploy:all` | Deploy both hosting and functions |
+
+## Backend API (Node.js)
+
+This project now includes a Node.js backend in `functions/` using Firebase Cloud Functions.
+
+### Setup
+
+```bash
+npm run functions:install
+npm run functions:build
+```
+
+### Run locally
+
+```bash
+npm run functions:serve
+```
+
+Emulator default URLs:
+- Functions API base: `http://127.0.0.1:5001/<firebase-project-id>/us-central1/api`
+- Health: `GET /health`
+- Tasks (auth required): `GET/POST /tasks`, `GET/PUT/DELETE /tasks/:id`
+
+### Auth for `/tasks`
+
+Send Firebase ID token in request header:
+
+```http
+Authorization: Bearer <Firebase_ID_Token>
+```
+
+### Deploy backend
+
+```bash
+npm run functions:deploy
+```
 
 ## Deploy to Firebase Hosting
 
