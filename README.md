@@ -139,6 +139,19 @@ Emulator default URLs:
 - Health: `GET /health`
 - Tasks (auth required): `GET/POST /tasks`, `GET/PUT/DELETE /tasks/:id`
 
+Set frontend API base URL in `.env`:
+
+```env
+# Local emulator
+EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:5001/tasksnap-bdaa2/us-central1/api
+```
+
+For deployed backend:
+
+```env
+EXPO_PUBLIC_API_BASE_URL=https://us-central1-tasksnap-bdaa2.cloudfunctions.net/api
+```
+
 ### Auth for `/tasks`
 
 Send Firebase ID token in request header:
