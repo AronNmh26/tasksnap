@@ -30,6 +30,15 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof RouteNames.Login>
 
 const IS_NATIVE = Platform.OS !== "web";
 
+const isRecoverableNativeGoogleError = (message: string): boolean => {
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes("developer_error") ||
+    normalized.includes("sign_in_failed") ||
+    normalized.includes("12500")
+  );
+};
+
 export default function LoginScreen({ navigation }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -95,10 +104,24 @@ export default function LoginScreen({ navigation }: Props) {
         navigation.replace(RouteNames.MainTabs);
       } else if (useNativeGoogle) {
         // ── Native path: @react-native-google-signin/google-signin ──
-        const idToken = await nativeSignIn();
-        if (!idToken) throw new Error("Google id_token missing");
-        await loginWithGoogle(idToken);
-        navigation.replace(RouteNames.MainTabs);
+        try {
+          const idToken = await nativeSignIn();
+          if (!idToken) throw new Error("Google id_token missing");
+          await loginWithGoogle(idToken);
+          navigation.replace(RouteNames.MainTabs);
+        } catch (nativeErr) {
+          const nativeMsg =
+            nativeErr instanceof Error ? nativeErr.message : String(nativeErr ?? "");
+
+          if (!isRecoverableNativeGoogleError(nativeMsg)) {
+            throw nativeErr;
+          }
+
+          // Fallback keeps users unblocked while OAuth SHA config is being fixed.
+          const { idToken, accessToken } = await expoGoSignIn();
+          await loginWithGoogle(idToken, accessToken ?? null);
+          navigation.replace(RouteNames.MainTabs);
+        }
       } else if (isExpoGo) {
         // ── Expo Go on iOS/Android: manual OAuth + PKCE ──
         const { idToken, accessToken } = await expoGoSignIn();
