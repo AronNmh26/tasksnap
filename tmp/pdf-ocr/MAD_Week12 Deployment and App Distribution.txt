@@ -1,0 +1,451 @@
+
+
+-- Page 1 --
+[J] [J] [J
+Mobile Application
+[J]
+Development in the Al Era
+Moving from Syntax Memorization to System Architecture
+Week 12: Deployment and App Distribution
+N
+Course Code: 1305216
+Credits: 3 (2-2-5)
+Prerequisites: Basic programming (any language),
+Basic understanding of Web / API concepts (recommended) By: Vittayasak Rujivorakul
+
+
+
+-- Page 2 --
+Communication Channel
+* Microsoft Teams: Streaming, Assignment
+If k 1 & MS.Team Code
+
+Chat with AI-TA
+* Communication @:F5@
+* FB Message: vittayasak rujivorakul ALTER
+* Email: vittayasak@mfu.ac.th rd ha
+@F:aiH
+
+
+
+-- Page 3 --
+Final Exam 28 Apr - 09 May 2025
+* 13-Mar-2026 Midterm Exam (Lab Test)
+* 20-Mar-2026 Privacy, PDPA & Personal Data
+* 27-Mar-2026 Performance, Cost & Reliability
+* 27-Mar-2026 Testing & Quality Assurance
+* 3-Apr-2026 Deployment & Application Distribution
+* 17-Apr-2026 Demo Day #1
+* 24-Apr-2026 Demo Day #2
+
+
+
+-- Page 4 --
+Deployment & <
+App Distribution 7
+
+Signing, Stores, and the ==/ / dn
+
+Art of ‘Shipping’ CF /
+
+
+
+-- Page 5 --
+The Two Worlds of Your App: Debug vs. Release
+{> Debug Build Release Build
+& Purpose: For Developers 829 « Purpose: For Users
+¥ : . » Performance: Fast (AOT compiled,
+© « Performance: Slow (JIT Compiled) £9 optimized)
+« Size: Large, contains developer IS « Size: Small (Tree Shaking,
+tools & logs A= Obfuscation with ProGuard/R8)
++ Signing: Auto-signed with a « Signing: Cryptographically signed
+temporary key with your permanent key
+« Backend: Connects to "dev" « Backend: Connects to "prod"
+servers (e.g., localhost:3000) servers (e.g., api.production.com)
+Submitting a debug build to the store is an instant rejection.
+We must create a professional, optimized release version.
+
+
+
+-- Page 6 --
+Step 1: The Keystore — Your Digital Passport
+
+A Keystore cryptographically proves that you
+
+are the author of your app and all its future
+
+updates. It is your permanent digital identity. N (7
+
+If another person gets your key, they can
+
+release malicious updates. If you lose it, you Cams
+
+can never update your app again. \
+The Golden Rule 7/ oe / \ Xe AN
+If you lose your Keystore, you lose your app. LY Eo
+Forever. You cannot recover it. Google and BACK. ’ H = UP.
+Apple cannot help you. You will lose all your 7, N
+users and have to publish a brand new app.
+
+
+
+-- Page 7 --
+A Critical Boundary: Al Manages Words, You Manage Secrets
+Al can help with boilerplate code, but it cannot and should not manage your security secrets. You are the
+responsible engineer.
+DO DON'T
++ Use Al to write marketing text. « Paste your Keystore passwords or content into
+« Use Al to suggest build script logic. ChatGPT.
+« Use Al to generate placeholder icons. « Ask Al to hardcode keys into your build scripts.
+« Commit your “key.properties” file to GitHub.
+[XX]
+® Generating erating well-written marketing copy my new [6] .
+fitness app, with the ptanents to he:i'maic their easy of new
+Fitness app. A few ruming pot worr -in teach with eneed
+celivery.moprate Issons, tivt abillty, crownees and crudability.
+@ ype a message. B >) Type a message. >) 9
+
+
+
+-- Page 8 --
+Step 2: Passing the Gatekeepers' Review
+Both Apple and Google review every app and every update to Lows fp dk of am, comsocuer
+ensure a baseline of quality, security, and privacy. Rejections are Soar Ct
+common but avoidable if you think like a reviewer. Sea: Sh.
+Common Rejection Reasons: S|
+mY
+— =
+® Crashes: App crashes on startup or during a key user flow. al Tk )
+(¥) Broken Functionality: Links are dead, buttons do nothing. |) \
+(X) Placeholder Content: The app contains “Lorem Ipsum” text Pe pe
+or default templates. er
+(X) Permission Overreach: Requesting permissions the app amcision tte sn
+doesn't use (e.g., Camera access for a calculator). This is a commodo vet"
+major PDPA violation. Lorem psum dolor si ame,
+® Poor UI/UX: Buttons are too small to tap, text has poor fe rd
+contrast (violates accessibility). ee
+
+
+
+-- Page 9 --
+1 . . . . .
+Al's Time to Shine: App Store Optimization (ASO)
+Leveraging Al for better app visibility and downloads.
+You're an engineer, not a marketer. App Store Lii»~e]
+Optimization (ASO) is SEO for apps, involving your PPR) Fitbuise: Al Home = 2
+hk ih A All Workouts = Al can generate this!
+icon, screenshots, keywords, and description. This ech swwers
+is the perfect task to delegate to Al. dot ome
+; : : - =a | x: [4 Al can frame these!
+Act as an ASO expert. I'm releasing a fitness app called a £3
+'FitPulse'. = + b
+Tanto You ins Joey win ibe ¢
+Core Features: AI-powered workout plans, calorie tracking, Ee at Ep
+community challenges. forme hela gd
+Target Audience: Young professionals who want to work out at Rr ms Ca
+home. en Wot es: No emnt newt Partch : £
+Al can write this!
+Task: Write a compelling 4800-character app description. Focus J Jo goal iadorbounds snd
+on keywords like 'home workout,' 'HIIT,' 'weight loss,' and ae Sa pee wma
+'AL personal trainer.' Use bullet points and emojis for a ty a tp Fey
+readability." a A lssetl
+
+
+
+-- Page 10 --
+The Pro Move: Automating the Release with CI/CD
+Problem: Building and signing on your Fa)
+own laptop is manual, slow, and prone to
+human error (e.g., forgetting to update the ? oft =
+8 ‘git push” to oud Server
+version number). SEA branch (GitHub Actions)
+triggers
+Solution: Continuous (©)
+Integration/Continuous
+Deployment (CI/CD) services like GitHub Run Automated Tests
+Actions or Codemagic automate the entire il {from Wesk:1)
+process. Build Release
+App
+AI Taskx: "Write a GitHub Actions YAML PL.
+file to build a Flutter APK and sign
+it using repository secrets." Sign with Securely Upload to App
+Stored Keystore Store / Play Store
+
+
+
+-- Page 11 --
+This Week's Lab: Building Your First Release Candidate
+
+Today, we make it real. We will transform your development code into a production-ready
+
+artifact that can be installed on any phone in the world.
+
+7 Task 1: Generate a Signed Release Build.
+Er Create your Keystore and compile the final APK/AAB file.
+Task 2: ‘Side-load’ onto a Real Device.
+YO We will install the app directly onto a physical phone to test it in a
+real-world environment.
+Task 3: Generate Store Assets.
+4 Use Al to write your app's compelling description and draft the release
+Al" notes for version 1.0.0.
+
+
+
+-- Page 12 --
+Lab Deep Dive: The Reality Check
+Emulators can lie. Real phones tell the truth. After side-loading your release build, you must perform a
+"smoke test." Can you log in? Does the main feature work?
+/N\ **Common Failure Point**: Google/Firebase
+authentication will likely fail. fro
+
+Why? C®) oil
+Your new Release Keystore has a different cryptographic a = =
+signature (SHA-1 fingerprint) than the Debug Keystore your ° £2
+computer has been using automatically. The server no longer PP 4 °
+recognizes your app. 68) orfre S
+The Fix ei
+1. Use the keytool command to extract the new Release Release SHA-1
+
+SHA-1 fingerprint from your keystore file.
+2. Add this new fingerprint to your app's settings in the
+
+Firebase project console.
+
+
+
+-- Page 13 --
+. . pI
+Your Digital Passport: \ bY
+©
+The Keystore \ oD .
+VAS  /
+Before Google or Apple trusts your app, you must 2 \
+prove you are its true creator. The Keystore is a file \N ¢C
+containing your private cryptographic key. It is your NZ
+permanent, unchangeable identity. | [/ J
+<\\ —
+'e Xa N
+THE GOLDEN RULE a
+« If you lose your Keystore, you can NEVER
+update your app again. / {
+* The project is permanently locked. All your \
+users are lost.
+* There is no “forgot password.” There is no
+sai] GONE FOREVER
+
+
+
+-- Page 14 --
+Action: Generate Your Keystore
+Run this command in your terminal. Al cannot and should not do this for you.
+Step 1: Generate the Key (Android Example)
+keytool -genkey -v -keystore my-upload-key.jks -keyalg RSA -keysize 2048 -validity
+10000 -alias upload
+» You will be prompted to create a strong password. SAVE IT IN A PASSWORD MANAGER.
+Step 2: Secure the Artifacts
+» Move the generated “my-upload-key.jks" file to a safe, private folder OUTSIDE your project
+repository.
+» IMMEDIATELY add “*.jks" and “key.properties” to your *.gitignore" file.
+
+
+
+-- Page 15 --
+Action: Configure the Build
+Your build tool (Gradle) needs to know where to find your key and password, but you must never
+commit these secrets to version control. We use a .properties file that is ignored by Git.
+The Safe Method:
+1. Create a file named android/key.properties (this file should be in .gitignore).
+2. Add your secret credentials to this file.
+Al Prompt for Safe Configuration
+Use this prompt to get help wiring it up without revealing your secrets.
+> “Act as a Senior Android Security Engineer. | have an Android Keystore and a key.properties
+file. Show me the code to add to android/app/build.gradle in a Flutter project to configure the
+signingConfigs for the ‘release’ build type. Do not show any hardcoded passwords.”
+
+
+
+-- Page 16 --
+From Debug Bloat
+to Release Speed Feature Debug Build Release Build
+bag lis Ae igcl ie DaTTaTIan JIT Compiled AOT Compiled
+ebug’ builds. It's time to orge a el ance (Slow) (Fast)
+‘Release’ build—an optimized,
+fast, and lightweight artifact . Large Optimized & Tree-
+ready for production. ze (~50MB+) Shaken (~15MB)
+Dev Tools Included Stripped Out
+Aamir Your Production
+bo BE es ite Key
+
+
+
+-- Page 17 --
+Action: Compile the Release Artifact
+
+This command will compile, shrink, and sign your application using the key you just configured. This may
+take several minutes as the compiler performs optimizations like ‘tree shaking' to remove unused code.
+The Command
+
+# For Flutter
+
+flutter build appbundle --release
+
+# For React Native (from project root)
+
+cd android && ./gradlew bundleRelease
+
+Verification N\
+
+e Locate the output file (e.g., Q
+build/app/outputs/bundle/release/app- Debug Release
+release.aab).
+
+e Compare its file size to your debug build. You
+should see a significant reduction. ~50MB+ ~15MB
+
+
+
+-- Page 18 --
+Now, Sell It: App Store
+(o Titl . . .
+Icon ~ | a Optimization (ASO)
+You have a product. Now you need to sell it. ASO
+= Short is Search Engine Optimization for app stores. The
+Description icon, description, and screenshots are what
+convince a user to tap “Install.” This is a perfect
+task for Al. You provide the strategy and context;
+the Al provides the creative options.
+Al's Role:
+O Screenshots
+E « Generating compelling descriptions
+o Q \s « Brainstorming keywords and titles
+» Suggesting designs for icons and feature
+
+
+
+-- Page 19 --
+° [] ’
+Action: The ‘ASO Expert’ Persona Prompt
+Use a detailed persona prompt to get high-quality marketing text. Do not be vague. The quality of
+your input directly determines the quality of the output.
+The Prompt
+Act as an ASO (App Store Optimization) Expert for the Google Play Store. | am releasing an app
+named '[App Name]"
+Core Features: [List your top 3 features].
+Target Audience: [Describe your ideal user, e.g., ‘University students in Thailand struggling with time
+management'].
+Your task:
+1. Write a catchy Short Description (80 characters max).
+2. Write a compelling Long Description (4000 characters max) using bullet points, emojis, and
+incorporating keywords like '[Keyword 1]' and '[Keyword 2]' naturally.
+3.Suggest 5 'Feature Graphic' text overlays for my screenshots that highlight the app's benefits.
+
+
+
+-- Page 20 --
+The Reality Check: Sideloading
+[ ° \ *
+Emulators lie. They have perfect internet, fast processors, |
+and none of the weird bugs introduced by device |
+manufacturers. The only way to know if your app truly | |
+works is to install it on a real phone. This is called i
+“sideloading.” € A | \,
+What to Expect ® omni euce’
+«You will see security warnings like “Blocked by Play . |
+Protect.” This is normal for apps not installed from an fo
+official store. |
++ This is your first “smoke test"—a quick check to see if
+anything is fundamentally broken after the release
+compilation.
+
+
+
+-- Page 21 --
+. ogo
+Action: The Critical Smoke Test
+After installing the artifact on your phone, open the app and perform the most critical
+user flow.
+CRITICAL CHECK: D Logi k?
+: Does Login work?
+A Common Failure Mode
+A Common Failure Mode
+If you use Firebase, Google Auth, or other backend services that rely on security keys, your app will likely crash or fail to log in.
+Why? The Fix
+Your Release Keystore has a different SHA-1 security You must generate the new SHA-1 fingerprint from your
+fingerprint than your Debug key. Your backend doesn’t release key and add it to your Firebase/backend project
+recognize this new key. project console. This proves
+This proves to the service that Vv MN
+& the signed, production version == 5]
+of your app is allowed to use
+Debug Backend your backend. Release Backend
+
+
+
+-- Page 22 --
+. . . .
+Thinking Like a Release Engineer
+You've successfully built a release artifact. Now, consider the professional
+responsibilities that come with it.
+Question 1: The Versioning Dilemma Question 2: The ‘Bus Factor’
+You just shipped "1.0.0". You find and fix a small Your Keystore file and password exist only on your
+bug that causes a crash. What is the next version laptop. If you get hit by a bus, can your team update
+number according to Semantic Versioning? the app?
+& + "1.0.1" (Patch for a backward-compatible eo + No. The project is dead.
+bugfix) 4
+Sl « “1.1.0 (Minor for a new, backward- + Professional teams use secure, shared
+compatible feature) ==3° vaults for secrets.
+* * "2.0.0" (Major for a breaking change)
+
+
+
+-- Page 23 --
+Lab Deliverables
+To complete this lab, you must produce two key artifacts.
+ad x
+(22D) £9
+1. The Product Artifact (.aab or . apk file) 2. The Marketing Assets (Text file or PDF)
+e The signed, release-ready application bundle. e The short and long descriptions generated by
+o This is the file you would upload to the your ‘ASO Expert’ Al prompt.
+Google Play Console. e Include the exact prompt you used and the
+Al's raw output.
+
+
+
+-- Page 24 --
+. 1} Ld
+Congratulations. You've Shipped.
+A
+A 5
+You have successfully navigated one of the most complex and critical processes in
+software engineering. You've moved beyond just writing code that *works* on your
+machine. You've engineered a product that is secure, optimized, and distributable.
+This is the difference between a project and a product.
+
+
+
+-- Page 25 --
+Week 12: Key Takeaways
+Three essential rules for shipping software:
+y | | & |
+-
+fo) =o
+- v V
+1. Build for Release. 2. Guard Your Keys. 3. Leverage Al Wisely.
+Release builds are Your Keystore is your Use Al as your tireless
+fundamentally different from permanent identity in the app marketing intern and
+debug builds. They are faster, ecosystem. Back it up in boilerplate code generator. Do
+smaller, and connect to multiple secure locations and not use it as your security
+production services. Always never, ever commit it to a officer or let it manage your
+test the final release version. public repository. secret keys.
+
+
+
+-- Page 26 --
+Next Week: Is Anyone Actually Using Your App?
+Week 13 - Product Thinking & Continuous Improvement
+Analytics: Measuring user behavior with actionable metrics, not vanity metrics.
+User Feedback Loops: Systematically collecting and acting on user reviews.
+Crash Reporting: Automatically detecting when, where, and why your app fails in
+the wild.
+57 oli] 5%
+LAUNCH ——> MEASURE —— > LEARN
+

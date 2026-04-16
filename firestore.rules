@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Tasks: only the owning user can read / write their own tasks
+    match /tasks/{taskId} {
+      // Read existing docs: owner only
+      allow read: if request.auth != null
+                  && resource.data.userId == request.auth.uid;
+
+      // Create new docs: userId in incoming data must match auth uid
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Update existing docs: owner only, and cannot change userId
+      allow update: if request.auth != null
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Delete existing docs: owner only
+      allow delete: if request.auth != null
+                    && resource.data.userId == request.auth.uid;
+    }
+
+    // Default: deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

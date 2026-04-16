@@ -1,0 +1,448 @@
+
+
+-- Page 1 --
+[J] [J] [J
+
+Mobile Application
+[J]
+
+Development in the Al Era
+Moving from Syntax Memorization to System Architecture
+Week 09: Privacy PDPA and Personal Data
+N
+Course Code: 1305216
+Credits: 3 (2-2-5)
+Prerequisites: Basic programming (any language),
+Basic understanding of Web / API concepts (recommended) By: Vittayasak Rujivorakul
+
+
+
+-- Page 2 --
+Communication Channel
+* Microsoft Teams: Streaming, Assignment
+If k 1 & MS.Team Code
+
+Chat with AI-TA
+* Communication @:F5@
+* FB Message: vittayasak rujivorakul ALTER
+* Email: vittayasak@mfu.ac.th rd ha
+@F:aiH
+
+
+
+-- Page 3 --
+Final Exam 28 Apr - 09 May 2025
+* 13-Mar-2026 Midterm Exam (Lab Test)
+* 27-Mar-2026 Performance, Cost & Reliability
+* 03-Apr-2026 Testing & Quality Assurance
+* 10-Apr-2026 Deployment & Application Distribution
+* 17-Apr-2026 Product Thinking & Continuous Improvement
+* 24-Apr-2026 Demo Day
+Makeup Class
+* Week 07 Code Review Debugging & Refactoring
+* Week 08 Mobile Security Fundamental ;
+
+
+
+-- Page 4 --
+| " :
+Privacy, PDPA & Personal Data
+Engineering for Consent in the Al Era
+
+
+
+-- Page 5 --
+Last Week You Fought Hackers.
+This Week You Face Lawyers.
+KR
+Week 8: The External Threat Week 9: The Internal Threat
+(Security) (Compliance)
+« Protecting against unauthorized access. + Protecting the rights of authorized users.
+« Defending the system from outsiders. * dl your design choices from
+* The ‘Paranoid Engineer" mindset. « The "Meticulous Architect’ mindset.
+Security is about keeping bad actors out.
+Privacy is about respecting the people you let in.
+
+
+
+-- Page 6 --
+The Most Important Thing You Will Learn This Week
+[o] [)
+
+“Data is not oll;
+@® ® @ ’ ) | )
+It Is toxic waste.
+
+It is a liability from the moment you collect it.
+It costs money to store securely.
+It can destroy your reputation if it leaks.
+You are legally required to manage and dispose of it correctly.
+
+
+
+-- Page 7 --
+The ‘Threat Surface’: What Counts as Personal Data?
+Direct Identifiers Indirect Identifiers Sensitive Personal Data
+(HIGH RISK)
+Name ¢ GPS Location ¢ Health Data
+* Email  |P Address » Biometrics (Face Scan)
+* Phone Number ¢ Device ID * Religion
+« National ID Number Advertising ID ¢ Criminal Record
+An Al model treats ‘Health Data’ as just another string variable. Under PDPA, it
+is not. It requires explicit consent and military-grade security.
+
+
+
+-- Page 8 --
+PDPA Principles as System Requirements
+
+[Collection] [Disclosure] [Destruction]
+©] Ng 3
+You must tell the user why you Collect the absolute minimum Ta——
+are collecting the data, and only amount of data necessary to A user can demand you delete
+use it for that purpose. (e.g., fulfill the stated purpose. all their data. Your system must
+“We need your location to be architected to handle this
+deliver your food,” not “to sell without crashing.
+to advertisers.”)
+
+
+
+-- Page 9 --
+ope
+Vulnerability #1: Al-Generated Data Greed
+The Al Default The Human Review
+Inter SemiBold, #4A5568 Inter SemiBold, #4A5568
+Name emai
+A =)
+= Password
+= [3
+Password
+[=]
+Phone Number
+Y
+Osteof Birth
+E) 3
+Gonder
+Home Address
+[)
+‘Salary |
+c——
+Al saw ‘sign-up form’ in its training data and included every field it could This form respects Data Minimization. It only asks for what is essential
+think of. Asking for Salary without a clear reason is a PDPA violation. for authentication. We can ask for an address later, during checkout.
+
+
+
+-- Page 10 --
+Vulnerability #2: The Al Consent Trap
+Bad: The Al Dark Pattern
+By signing up, you IN Terms of Service, Privacy
+Policy, and to receive marketing emails.
+This is illegal. Bundling consent is not allowed, and pre-checked boxes are not considered valid consent under PDPA.
+Good: Granular & Explicit Consent
+ev 4 0) | agree to the [Terms of Service] and [Privacy Policy]. (Required)
+Vv [= | would like to receive promotional offers and newsletters. (Optional)
+Consent is separate, explicit, and opt-in. This is compliant.
+
+
+
+-- Page 11 --
+Vulnerability #3: Hallucinated Legal Policies
+eee @M < 0 ¢ uJ 5 a
+..your data is protected under the|Califoria aeme@FPrivacy Act (CCPAL|
+= You are in Thailand. The PDPA applies, not the CCPA.
+«= Al often hallucinates legal text based on its training data, which is heavily US-centric.
+* From the Syllabus (Week 1): “You are responsible for all submitted code.” This includes
+the legal text your Al generates.
+
+
+
+-- Page 12 --
+Vulnerability #4: Data Leaks Through Third-Party SDKs
+fo mongrel a Sends user profile
+patterns... data, app events...
+Google Analytics Your App Facebook SDK
+Sends user profile / Sends device ID, IP
+data, app events... address, usage patterns...
+Firebase ls Sends location data, Mixpanel
+~ J advertising ID...
+Ad Network
+Key Takeaway: You cannot claim 'we don't share user data’ if you have these SDKs installed.
+You are the Data Controller; you are responsible for what they collect through your app.
+
+
+
+-- Page 13 --
+ogo . . . .
+Mitigation Strategy: Privacy by Design
+Building compliance into your architecture, not bolting it on later.
+1. Anonymize Your Logs 2. Encrypt Data at Rest 3. Pseudonymization in
+Databases
+Bad Code Recap from Week 8
+PPC Ee |= Use "flutter_secure_storage’ Explanation
+nC Gams com) : or Expo SecureStore for tokens |= Store user_id in your ‘orders’
+and sensitive data. Never use table, not the user's full name and
+SharedPreferences or address. Join the tables only when
+Good Code *AsyncStorage” for secrets. necessary.
+print("User logged in:
+| user_id=8821") Users Table Orders Table
+|= Reason: If your logs are ever ot
+compromised, Pll (Personally (when
+Identifiable Information) is not needed) =
+exposed.
+
+
+
+-- Page 14 --
+2 H “ H ”n
+The Architectural Challenge: Implementing the “Right to Erasure
+Scenario: A user emails you: “Under PDPA, | withdraw my consent. Delete all my data now.”
+Scenario: A user emails you: “Under PDPA, |
+withdraw my consent. Delete all my data now.”
+Path A: Hard Delete Path B: Soft Delete Path C: Anonymization (Best Practice)
+Inter SemiBold Inter SemiBold Inter SemiBold
+DELETE FROM users UPDATE users UPDATE users
+WHERE id = X; SET is_deleted = true; SET name = "Deleted User",
+email = "deleted_8821@void.com", ...
+Risk: JetBrains Mono Inter Regular Risk: JetBrains Mono Inter Regular WHERE id = X;
+**CRASH!** Foreign key constraints in Risk: You still have the data. This can
+‘orders’, ‘reviews’, and ‘posts’ tables violate PDPA if you keep it indefinitely Benefit: JetBrains Mono Inter Regular
+will likely break. Your data integrity is without a valid reason. It's a temporary fix, Preserves data integrity (orders from that
+compromised. not a solution. that user still exist) while removing all
+personal identifiers. This is the goal.
+
+
+
+-- Page 15 --
+o ’ . . .
+This Isn't Theory. This Is for Your Final Project.
+Mobile Application Development.md
+
+**5, Final Project**
+Students must develop a sciminsion and sivet:
+* Has arufed a real-world problem
+* Use larger use roles or foan
+* Computerentar part spranina Al and relation
+—
+62] Your final grade depends on proving you have thought through these issues.
+A functional app with a leaky privacy model will not receive a high score.
+
+
+
+-- Page 16 --
+Engineering for
+Consent in the Al Era
+Your Guide to PDPA Analysis &
+Privacy Policy Generation
+
+Course: Mobile Application Development in the Al Era
+Week 9 Workshop
+
+
+
+-- Page 17 --
+What Exactly Are You Collecting?
+Direct Ga Indirect a Sensitive Personal
+Identifiers Identifiers Data (High-Risk)
+* Name * GPS Location * Health Data
+e ID Number * IP Address * Biometrics
+* Phone Number Device ID * Religion
+You need explicit consent and
+high-level security to hold this.
+Al Risk Spotlight:
+ER Al models often treat ‘Health Data’ as just another string variable. It is not. Under PDPA, it
+requires special, explicit consent. If you don’t need it, delete the column from your database.
+
+
+
+-- Page 18 --
+Al Default / Dark Pattern PDPA Compliant
+( \ (—
+Sign up Sign up
+Vv ee to everythin [T] 1agree to the Terms of Service.
+=) | consent to share my location
+for delivery purposes.
+|
+: % : o)
+Hallucinated Policies O Invalid Consent (= 9} The Takeaway
+Al will generate generic Privacy Bundling unrelated consents (e.g., You are responsible for reading,
+Policies that mention “California Marketing with Terms of Service) understanding, and adapting every
+Law (CCPA)" or “GDPR" but miss is not compliant. Consent must word the Al generates. A
+the specifics of the “Thai Personal be granular and freely given. hallucinated legal policy is
+Data Protection Act (PDPA).” worthless.
+
+
+
+-- Page 19 --
+Your Mandate: The 3 Core PDPA
+Principles for Developers
+Cy =
+© A. IME
+€ =
+®
+1. Purpose Limitation 2. Data Minimization 3. Right to Erasure
+You must tell the user why you Collect only the minimum Users have the right to be
+are collecting the data, and only amount of data necessary to forgotten. Your system must be
+use it for that specific purpose. achieve your stated purpose. architected to handle a “Delete
+The mantra is: “Data is not oil; My Account” request completely
+it is toxic waste.” and correctly from Day 1.
+
+
+
+-- Page 20 --
+Step 1: Conduct a Data Inventory
+
+You cannot protect what you don’t know you have.
+Data Point Category Why do you need it? (The Justification)
+User Email General To send password reset links and for login.
+Face Scan sensitive (Biometric) To unlock the app securely via biometrics.
+[Student Field 1]
+[Student Field 2]
+ams Review your Database Schema (from Week 3) and your API calls (from Week 6).
+o—| List every single data point.
+
+
+
+-- Page 21 --
+Exposing The Third-Party Leaks
+Key Concepts
+| e Inherited Responsibility: Every SDK you install
+[] IQ collects data. Under PDPA, you are responsible for
+wv. N the data collection practices of the SDKs you
+Google 19% Pai Facebook choose.
+
+Analytics 5 og SDK « The Al Blindspot: If you ask an Al to “Add analytics,”
+it might add a library that tracks everything by
+default, creating an instant compliance risk.
+
+) K° YourMobile #4 Action Item
+y| App @ ’ List every external SDK you've installed (e.g., Firebase,
+Google Maps, Facebook Login) and identify what data
+
+Firebase Ad Network they collect (e.g., IP Address, Device ID, Location). This
+
+information is required for your privacy policy.
+
+
+
+-- Page 22 --
+Step 2: The ‘Creep Factor’ Audit
+
+Look at your data inventory. Is there any field you are collecting ‘just in case’?
+
+O [1No, every field is vital for core functionality.
+
+® [1Yes, | am collecting [Field Name] without a current, specific purpose.
+**Remediation Plan Example**
+If you answered ‘Yes,’ your plan is simple:
+1. Action: Remove the ‘Phone Number’ field from the sign-up form.
+2. Justification: | only require an Email for authentication and communication.
+3. Technical Task: Drop the corresponding column from the database schema.
+
+
+
+-- Page 23 --
+Step 3: Al-Assisted Policy Generation
+
+The quality of the legal text depends on the quality of your prompt.
+Act as a Legal Compliance Officer for a Thai mobile application. Write a
+Privacy Policy for an app named '[App Name]' that helps users [App Function].
+Data Collection: We collect [List from Part 1.1].
+Third Parties: We use [List from Part 1.2].
+Legal Basis: Compliance with the Thai Personal Data Protection Act (PDPA).
+Rights: Include sections for Right to Access, Right to Delete, and Right to
+Withdraw Consent.
+Contact: The Data Controller is [Your Name/Email].
+Tone: Clear, transparent, and easy for a non-lawyer to read.
+
+©) Use this exact structure. Replace the bracketed text with your project's specific details.
+
+
+
+-- Page 24 --
+The Human Verification Step: Audit the Al
+
+Al hallucinates. You are the final line of defense.
+
+Your Audit Checklist: Read the generated policy and check for these common Al
+
+errors.
+
+J Jurisdiction Error: Does it mention 'GDPR' (Europe) or 'CCPA' (California)
+instead of the "Thai PDPA' you explicitly requested? If yes, you must correct
+it.
+
+J Technology Error: Does it claim you use 'Cookies'? Mobile apps typically use
+Device IDs or Tokens, not browser cookies. If the Al included a cookie
+section, delete it.
+
+] Data Mismatch: Does the policy list the exact data points and third-party
+services from your prompt, or did it invent new ones? Verify every item.
+
+
+
+-- Page 25 --
+. .
+Step 4: Designing the Consent Ul
+A policy is useless if the consent mechanism is manipulative.
+The “Dark Pattern” Check
+X BAD: The checkbox is pre-checked. The text is tiny
+and gray. The link to the policy is hidden or broken.
+Vv GOOD: The checkbox is empty by default. The user
+Email must actively tap it. The link clearly opens a readable
+modal or screen with the policy.
+Password
+Your Implementation Plan
+| agree to the Terms and
+Privacy Policy. i € The ‘Sign Up’ button should remain disabled (visually
+greyed out) until the user has checked the box agreeing
+to the Terms and Privacy Policy.
+
+
+
+-- Page 26 --
+The Architectural Challenge: The Right to Erasure
+A user emails you: "Under PDPA, | withdraw my consent. Delete all my data
+immediately.”
+How will your architecture handle this?
+Option 3: Anonymization
+Option 1: Hard Delete Option 2: Soft Delete (Best Practice)
+DELETE FROM users UPDATE users UPDATE users
+WHERE id = X; SET is_deleted = true; SET name = "Deleted User",
+email = "deleted_8821@void.com";
+Risk Risk Benefit
+Breaks referential integrity. \ You still have the data. This may Er Preserves data integrity for
+0) What happens to their past violate PDPA's "right to be QQ analytics (e.g., past order
+orders or posts? The database ® forgotten” if kept indefinitely. (AN records remain) while
+may crash. removing all Personally
+Identifiable Information (PII).
+
+
+
+-- Page 27 --
+Your Workshop Mission: The PDPA Audit
+Your Tasks
+O 1. Create Your Data Inventory: Map all personal data and third-party SDKs.
+O 2. Perform the ‘Creep Factor’ Test: Identify and plan the removal of any unnecessary data.
+3) 3. Generate Your Privacy Policy: Use the context-loaded prompt.
+O 4. Audit the Al's Output: Manually verify and correct the generated policy.
+(=) 5. Design the Consent Ul: Wireframe and plan the implementation of a compliant
+consent mechanism.
+= 6. Choose an Erasure Strategy: Decide how your architecture will handle deletion requests.
+
+
+
+-- Page 28 --
+° (3 .
+The Goal: Privacy by Design
+Privacy is not a feature you add at the end. It is a foundational part of your architecture.
+Bad Good
+print(“User logged in: print("User logged in:
+X somchai@email.com") v4 ID 8821") 0 p—
+1. Anonymization in Logs 2. Encryption at Rest 3. Least Privilege
+(Recap from Week 8) User tokens and Does your calculator app really
+Bad Good sensitive data must be stored in the need camera and location
+FT Al device's secure, encrypted storage permissions? Request only the
+ail oo " pln (Keychain/Keystore), not in plain text permissions essential for core
+logged in.com") iste
+SharedPreferences. functionality.
+

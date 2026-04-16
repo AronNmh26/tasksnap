@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { RouteNames } from "../../../appRoot/navigation/routes";
 import { useTasksStore } from "../store/useTasksStore";
 import { toLocalReadable } from "../../../core/utils/date";
@@ -45,8 +45,14 @@ export default function DashboardScreen() {
     refresh().catch(console.error);
   }, [refresh]);
 
-  // Filter tasks by selected date.
-  const filteredTasks = useMemo(() => {
+  useFocusEffect(
+    React.useCallback(() => {
+      refresh().catch(console.error);
+    }, [refresh])
+  );
+
+  // All tasks on selected date.
+  const selectedDateTasks = useMemo(() => {
     return tasks.filter((task) => {
       if (!task.dueAt) {
         // Tasks without due date are shown if selected date is today
@@ -64,6 +70,11 @@ export default function DashboardScreen() {
       );
     });
   }, [tasks, selectedDate]);
+
+  // Active (ongoing) tasks for selected date.
+  const activeTasks = useMemo(() => {
+    return selectedDateTasks.filter((task) => task.status !== "completed");
+  }, [selectedDateTasks]);
 
   const selectedDateTitle = useMemo(() => {
     const selected = new Date(selectedDate);
@@ -108,6 +119,7 @@ export default function DashboardScreen() {
         notificationId: null,
         imageUri: payload.imageUri,
         imageBase64: null,
+        userId: user?.id,
       };
       await save(task);
     } catch (err) {
@@ -143,7 +155,15 @@ export default function DashboardScreen() {
     }
   };
 
-  const focusTasks = filteredTasks.slice(0, 3);
+  const focusTasks = activeTasks.slice(0, 3);
+
+  // Show recent tasks that are NOT in the focus section (different dates)
+  const recentTasks = useMemo(() => {
+    const focusIds = new Set(focusTasks.map((t) => t.id));
+    return tasks
+      .filter((t) => t.status !== "completed" && !focusIds.has(t.id))
+      .slice(0, 5);
+  }, [tasks, focusTasks]);
 
   return (
     <View style={styles.screen}>
@@ -161,11 +181,11 @@ export default function DashboardScreen() {
             </TouchableOpacity>
             <View style={styles.statsRow}>
               <View style={styles.statBadge}>
-                <Text style={styles.statNumber}>{filteredTasks.length}</Text>
+                <Text style={styles.statNumber}>{activeTasks.length}</Text>
                 <Text style={styles.statLabel}>Tasks</Text>
               </View>
               <View style={styles.statBadge}>
-                <Text style={styles.statNumber}>{filteredTasks.filter(t => t.status === "completed").length}</Text>
+                <Text style={styles.statNumber}>{selectedDateTasks.filter(t => t.status === "completed").length}</Text>
                 <Text style={styles.statLabel}>Done</Text>
               </View>
             </View>
@@ -263,6 +283,54 @@ export default function DashboardScreen() {
               <Text style={styles.primaryActionText}>Quick Add Task</Text>
             </TouchableOpacity>
           </View>
+        ) : null}
+
+        {/* Recent / upcoming tasks from other dates */}
+        {recentTasks.length > 0 ? (
+          <>
+            <View style={styles.sectionHeader}>
+              <MaterialIcons name="schedule" size={20} color={colors.primary} />
+              <Text style={styles.sectionTitle}>Recent Tasks</Text>
+            </View>
+            <View style={styles.cardList}>
+              {recentTasks.map((task) => (
+                <Swipeable key={task.id} renderRightActions={() => renderRightActions(task.id)}>
+                  <TouchableOpacity
+                    style={styles.glassCard}
+                    onPress={() => navigation.navigate(RouteNames.TaskDetails, { taskId: task.id })}
+                  >
+                    <View style={styles.cardBody}>
+                      <View style={styles.cardHeader}>
+                        <View style={[styles.badge, { backgroundColor: categoryColor(task.category) }]}>
+                          <MaterialIcons name="label" size={12} color="#fff" />
+                          <Text style={styles.badgeText}>{task.category ?? "General"}</Text>
+                        </View>
+                        <View style={styles.priorityDot}>
+                          <MaterialIcons name="circle" size={8} color="#fbbf24" />
+                        </View>
+                      </View>
+                      <Text style={styles.cardTitle} numberOfLines={2}>{task.title}</Text>
+                      <View style={styles.cardMeta}>
+                        <MaterialIcons name="access-time" size={14} color={colors.textMuted} />
+                        <Text style={styles.cardMetaText}>{toLocalReadable(task.dueAt)}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.cardThumb}>
+                      {task.imageUri ? (
+                        <Image source={{ uri: task.imageUri }} style={styles.cardThumbImage} resizeMode="cover" />
+                      ) : task.imageUrl ? (
+                        <Image source={{ uri: task.imageUrl }} style={styles.cardThumbImage} resizeMode="cover" />
+                      ) : (
+                        <View style={styles.cardThumbPlaceholder}>
+                          <MaterialIcons name="image" size={24} color={colors.textSubtle} />
+                        </View>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </Swipeable>
+              ))}
+            </View>
+          </>
         ) : null}
       </ScrollView>
 

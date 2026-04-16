@@ -7,6 +7,7 @@ export interface AppSettings {
   defaultCategory: string;
   defaultReminderMinutes: number;
   showCompletedTasks: boolean;
+  notificationsEnabled: boolean;
 }
 
 interface SettingsState extends AppSettings {
@@ -17,8 +18,9 @@ interface SettingsState extends AppSettings {
 
 const DEFAULT_SETTINGS: AppSettings = {
   defaultCategory: "General",
-  defaultReminderMinutes: 15,
+  defaultReminderMinutes: 60,
   showCompletedTasks: true,
+  notificationsEnabled: true,
 };
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -47,6 +49,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         defaultCategory: state.defaultCategory,
         defaultReminderMinutes: state.defaultReminderMinutes,
         showCompletedTasks: state.showCompletedTasks,
+        notificationsEnabled: state.notificationsEnabled,
       };
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     } catch {

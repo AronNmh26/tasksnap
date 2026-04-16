@@ -1,0 +1,460 @@
+
+
+-- Page 1 --
+[J] [J] [J
+Mobile Application
+[J]
+Development in the Al Era
+Moving from Syntax Memorization to System Architecture
+Week 11: Testing and Quality Assurance
+N
+Course Code: 1305216
+Credits: 3 (2-2-5)
+Prerequisites: Basic programming (any language),
+Basic understanding of Web / API concepts (recommended) By: Vittayasak Rujivorakul
+
+
+
+-- Page 2 --
+Communication Channel
+* Microsoft Teams: Streaming, Assignment
+If k 1 & MS.Team Code
+
+Chat with AI-TA
+* Communication @:F5@
+* FB Message: vittayasak rujivorakul ALTER
+* Email: vittayasak@mfu.ac.th rd ha
+@F:aiH
+
+
+
+-- Page 3 --
+Final Exam 28 Apr - 09 May 2025
+* 13-Mar-2026 Midterm Exam (Lab Test)
+* 20-Mar-2026 Privacy, PDPA & Personal Data
+* 27-Mar-2026 Performance, Cost & Reliability (Wk 10, 11)
+* 10-Apr-2026 Deployment & Application Distribution
+* 17-Apr-2026 Product Thinking & Continuous Improvement
+* 24-Apr-2026 Demo Day
+
+
+
+-- Page 4 --
+\ Testing & Quality Assurance
+Wk The Safety Net for Al-Generated Code
+QUES
+
+ANN
+
+POR N pI = Rd — XT
+
+$ FR 1 XT.
+Vit SDN Y= ———— c= cami "
+Oe HE 1 :
+
+SI ROR SIR ORSSIIRREL SL? = = CC] =.
+
+WY 0 Is See Sg =
+
+CORA AA EE SSN H— HH ,
+PP NH — = ——] .
+IH NN A | 7
+8.7 a NE Ee I A
+
+Phase 4: Deployment & Product Thinking
+
+
+
+-- Page 5 --
+The Engineer's Question
+
+“If you change one line of code
+today, will the login screen break?”
+How do you know?
+
+The — bee “My oe will tell me in 7 seconds.”
+
+
+
+-- Page 6 --
+The New Reality: Coding with a Black Box
+Human Code Al-Generated Code
+- a
+{yr 3
+Slow, methodical, you know its weak Incredibly fast, prone to subtle
+spots because you wrote it. regressions, its logic can be opaque.
++ Regression: The risk of an Al refactor silently breaking an old, working feature.
++ The 'Black Box' Problem: You didn't write it, so you don't intuitively know its edge cases.
+« Your Responsibility: When you accept Al-generated code, you accept the risk. Verification is
+not optional.
+
+
+
+-- Page 7 --
+. .
+Your Safety Net: The Testing Pyramid
+5- Integration / E2E Tests
+¢ ) Checks the whole user flow (e.g., login -> add to
+= cart -> checkout). Slow, expensive, and can be
+5 “flaky”.
+Widget / Component Tests
+( Q Checks if a single Ul component works
+| 3 in isolation. Medium speed, tests user
+interaction.
+Unit Tests
+L - Checks a single function or class.
+Ir Blazing fast, runs in milliseconds, forms
+the foundation.
+We build from the ground up. If the math is wrong, the button doesn't matter.
+
+
+
+-- Page 8 --
+Foundation: Unit Testing the Logic
+
+Does this function do the math correctly?
+
+What to Test What NOT to Test
+
++/ Business Logic (e.g., X Third-party frameworks (Assume
+‘calculateTotalPrice()) Google has tested Flutter).
+
++ Data Parsers & Formatters (e.g., X Trivial getters/setters.
+*formatDateString()")
+
++/ Validators (e.g., "isValidEmail()")
+
+test('Calculator add method works', () {
+final calculator = Calculator();
+expect(calculator.add(2, 2), 4);
+
+1H;
+
+
+
+-- Page 9 --
+The Core Skill: Mocking Dependencies
+A unit test must be fast and reliable. It cannot depend on the internet, a database, or a live API.
+You test a pilot in a flight simulator, not by flying a real 747 into a hurricane.
+
+Without Mocking
+
+X Slow / Unreliable
+With Mocking
+Instant / Predictable
+££ We don't test the API. We test how our code *reacts* to data from the API. If the server
+sends null, does our app crash or handle it gracefully? Mocking lets us find out.
+
+
+
+-- Page 10 --
+.
+
+.
+The Mesh: Testing Ul Components
+If I tap this button, does the correct text appear?
+
+LoginCard // Find a widget by the text it displays
+
+[ await tester.tap(find.text('Login'));
+
+[roe
+
+Incorrect sah o pasword // Find a widget by a unique key (better practice)
+await tester.tap(find.byKey(ValueKey('submit_btn')));
+Find
+
+Key Concepts
+« **|solation**: Test a single “LoginCard" component without loading the entire app.
+« **Interaction**: Your test script can simulate user actions like tapping, scrolling, and typing.
+« **Verification**: After an action, your test checks if the Ul updated as expected.
+
+
+
+-- Page 11 --
+The Twist: Al as Your QA Engineer
+Writing tests can be tedious and repetitive. This is a perfect task for an Al. You move from being a
+writer of tests to a director of testing.
+
+Generate Test Suite
+
+Act as a Senior QA Engineer. I have this Dart function:
+
+[PASTE YOUR FUNCTION CODE HERE]
+
+Write a complete suite of unit tests for it. Cover these cases:
+
+1. The "happy path" with valid inputs.
+
+2. Edge cases like null inputs, empty strings, and negative numbers.
+
+3. A "sad path" test that you think might break it.
+
+
+
+-- Page 12 --
+Using Al to Build a Better Safety Net
+ls
+\ 7
+A 1} (QQ & i ==
+rE AS RW
+Generating Boilerplate Discovering Edge Cases Refactoring for Testability
+Al excels at writing the Al can brainstorm inputs you A useful signal: If an Al
+repetitive test(...) and forgot: empty lists, zero, struggles to write a test for
+expect(...) structures, special characters (emojis in your function, your code is
+letting you focus on the logic. a name field), etc. likely too complex or tightly
+coupled.
+“Use the Al against itself. Prompt it: “Here is my function. Write a test that breaks it.”
+
+
+
+-- Page 13 --
+.
+The Professional Workflow: Red-Green-Refactor
+1. RED: Write a Failing Test
+Describe the goal you want to achieve.
+Write a test for code that doesn't
+exist yet. Watch it fail.
+3. REFACTOR: Clean Up 2. GREEN: Make the Test
+The Code Pass
+
+With the safety net of a passing Write the simplest possible code
+
+test, you can now improve the to make the test turn green. Don't
+code's structure and readability worry about perfection yet.
+
+without fear of breaking it.
+
+
+
+-- Page 14 --
+Week 11 Lab: Automated Integrity
+Today, we turn the bars green. You will experience the Red-Green-Refactor cycle firsthand.
+Your Mission
+Unit Test the Core Logic
+Write a test for a data service or helper function.
+You will need to mock the HTTP client.
+Widget Test the Ul
+Write a test for your Login Screen. Find the input
+fields, type text, tap the button, and verify the result.
+75 Al-Generated “Sad Path”
+a Challenge the Al to write a test case designed to
+Uy break your code by using an unexpected input.
+
+
+
+-- Page 15 --
+Automated Testing: The Safety Net
+
+for Al-Generated Code p
+
+Week 11 Lab: Automated Integrit
+
+wo Js Ye
+
+b
+
+ACC TTT I A
+SE IIIIIITITIIIILILL Lo
+p- LVM SV RVEV EV EV = a DI Jp.
+Yo I A LL 7
+
+
+
+-- Page 16 --
+’ . .
+Today's Lab: Weaving Your Safety Net
+Main Objective Core Skill to Master Our Unique Approach
+To establish a ‘Safety Net’ for Mocking — The crucial We will use Al not just to write
+your application by technique of faking external code, but to act as our
+implementing Unit Tests and dependencies (like APIs and personal QA Engineer—
+Widget/Component Tests. databases) so your tests can generating test cases and
+run instantly, reliably, and helping us discover the edge
+offline. cases we might have missed.
+Unit Tests Widget/Component Tests Mocking
+
+
+
+-- Page 17 --
+The Rhythm of Professional Development: Red-Green-Refactor
+This is the core loop of test-driven development. It builds a foundation of quality and gives you the
+confidence to make changes without fear.
+
+[Red] Write a Failing Test
+
+You define the desired behavior *first*.
+The test fails because the code doesn't
+exist yet.
+
+[Refactor] Improve the Code [Green] Make the Test Pass
+With the safety net of a passing test, Write the simplest possible code to
+you can now clean up, optimize, and satisfy the test's requirements.
+
+improve the code's design.
+
+
+
+-- Page 18 --
+Part 1: Testing Pure Logic (Unit Tests)
+Objective: Verify the correctness of a single function in complete isolation. No Ul, no database,
+just pure logic (e.g., “validateEmail’, ‘calculateTotalPrice’).
+1. Identify a ‘pure’ helper function in your project.
+2. Use the following prompt to have Al generate your test suite.
+Al Prompt
+Act as a QA Engineer using [Flutter Test / Jest]. I have this function: [PASTE YOUR FUNCTION
+CODE HERE]
+Write a suite of Unit Tests covering:
+1. The Happy Path (Standard valid input).
+2. Edge Cases (Null values, empty strings, negative numbers).
+3. Invalid formats.
+Constraint: Use descriptive test names (e.g., 'should return @ when cart is empty').
+Run the generated test file. If it fails, is the bug in your code or the test? Debug and fix until it
+turns green.
+
+
+
+-- Page 19 --
+Part 2: Faking the Internet (The Power of Mocking)
+The Problem re
+ock?
+« Your “UserService' needs to talk to a real API over the internet. This v
+makes tests: A unit test MUST pass offline.
++ Slow: A network call can take seconds. lide prone J0e3 Co, Md
+test suite should not fail.
+« Unreliable: Fails if the WiFi is down or the server is restarting.
+« Costly: Hits your Firebase/API usage limits. Mocking is the technique that
+makes this possible, ensuring
+The Solution your tests are fast and
+We use a “Mock"—a fake object that impersonates the real dependency. deterministic.
+It returns predictable, hardcoded data in milliseconds.
+AN
+App Flow [un [Service] Client] INTERNET & >| [Server]
+Latency/Failure Risk
+Test Flow a [Fake Data (Instant)]
+
+
+
+-- Page 20 --
+Part 2: Generating and Implementing a Mock
+Objective: To test the logic of your “UserRepository” (e.g., JSON parsing) without making a
+real network call.
+Al Prompt
+I need to test my UserRepository class. It depends on an ApiClient. Help me write a
+test that Mocks the ApiClient.
+1. Use [Mockito / Mocktail / Jest Mocks].
+2. Stub the get() method to return a fake JSON response: {'name': 'Test User'}.
+3. Verify that UserRepository parses this JSON correctly into a User object.
+A Common Pitfall: Dependency Injection is Required!
+Mocking only works if you can replace the dependency. If your code creates its
+*ApiClient’ inside a method, you can't mock it.
+Solution: Pass the client in via the constructor. This allows you to provide the real
+client in the app and the mock client in the test.
+
+
+
+-- Page 21 --
+Part 3: Verifying the Ul (Widget/Component Tests)
+Objective: Test a Ul component in isolation. Does the button respond to a tap? Does an
+error message appear when it should?
+Action: Select a self-contained component like your “LoginCard" or a *ProductTile".
+lg CL 1. Find Input )
+Write a Component Test for this es CEL FOL Email
+LoginCard widget. Enter
+1. Pump/Render the widget. ‘test@test.com’
+2. Find the ‘Email’ input and
+enter text. we 3. Verify ‘error
+3. min Login’ button and message’ appears ***[» Password is required
+ap it.
+4. Verify that the error message
+appears.
+
+
+
+-- Page 22 --
+a o ’ o_o
+Part 3: Correcting the Al's Imperfect Vision
+A Common Pitfall: Al often guesses the wrong ‘Finder’ for Ul elements.
+It might look for the text ‘Submit’ when your button actually says ‘Login’. Your job is to correct
+the test to match your actual Ul.
+The Fix
+Al Generated (Fails X) Human Corrected (Passes 4)
+// AI guesses the text // We add a Key in our widget for reliability
+await tester.tap(find.text('Submit')); await tester.tap(find.byKey (const
+Key('login_submit_button')));
+Pro-Tip: Using explicit "Keys" on your widgets is more robust than finding by text, which can change with translations.
+
+
+
+-- Page 23 --
+. H ‘
+
+Part 4: Using Al to Break Your Code (The ‘Sad Path’)
+The Developer's Bias
+We are biased. We tend to test the ‘happy path’—the scenarios we know should work. But what
+about the ones we forgot?
+The Solution
+Turn the Al into your adversary. Ask it to find the flaws in your logic.
+
+Al Prompt
+
+Analyze this logic for potential failure points. Generate 3 ‘Sad Path’ test cases that | probably
+
+forgot. Think about boundary conditions, integer overflow, or weird Unicode characters in input fields.
+Your Challenge
+
+1. Implement one of the Al's suggested ‘sad path’ tests.
+
+2. Predict the outcome: Will your code pass or fail?
+
+3. Run the test and see if you were right.
+
+
+
+-- Page 24 --
+o
+Part 5: The Payoff - Speed and Fearless Refactoring
+Reflection Question 1: The Confidence Factor Reflection Question 2: Al Hallucinations
+“Before today, if you refactored your login ‘Did the Al ever invent a test library or import a
+logic, how did you verify it still worked?” package you don't use? This is a reminder to
+always be the senior developer in the room,
+= verifying the Al's work.”
+® Manual Testing
+Time: 2 minutes. oo
+0 Confidence: Low.
+v passing test: LoginScreen_renders
+v passing test: EmailField_validates_input
+CTE v passing test: PasswordField_validates_input
+3 Automated Testing v passing test: SubmitButton_disabled_when_invalid
+v—@o Time: 0.5 seconds. v HEE 5 Login_success_navigates_home
+C4 ——al Confidence: High v passing test: Login_failure_shows_error
+¢e—0 - High. v passing test: Network_error_handled_gracefully
+v All tests passed.
+
+
+
+-- Page 25 --
+.
+Your Safety Net is Woven. Now You Can Fly.
+A student project works once on demo day. A professional product works every time, for
+every user, after every code change. Your test suite is the proof.
+With this net in place, you can now leverage Al co-pilots with confidence. You can refactor
+aggressively, experiment with new features, and ship code faster than ever before,
+knowing your tests are there to catch you.
+
+(3 FN
+N d ,
+
+588) a
+RMS
+—~— NT
+A Aa wr OVATE
+SS AW AW AW AW AW A A eZ
+A Se 0% 4% aR a Ren
+SN a ¢. aS S000 & = Vs
+SN Toe
+
+
+
+-- Page 26 --
+26
+

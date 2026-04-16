@@ -1,1 +1,1 @@
-export { initDb, getAllTasks, getTaskById, upsertTask, deleteTask } from "./tasksApi";
+export { initDb, getAllTasks, getTaskById, upsertTask, deleteTask } from "./firestoreDb";

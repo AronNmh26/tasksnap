@@ -6,12 +6,26 @@
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
 import * as Crypto from "expo-crypto";
+
+WebBrowser.maybeCompleteAuthSession();
 
 // ──── Facebook App ID (get from https://developers.facebook.com) ────────────
 const FACEBOOK_APP_ID = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID ?? "";
 
 // ──── Helpers ───────────────────────────────────────────────────────────────
+
+const FALLBACK_EXPO_OWNER = "aronmh26";
+const EXPO_OWNER =
+  process.env.EXPO_PUBLIC_EXPO_ACCOUNT ??
+  process.env.EXPO_PUBLIC_EXPO_OWNER ??
+  Constants.expoConfig?.owner ??
+  FALLBACK_EXPO_OWNER;
+const EXPO_SLUG = Constants.expoConfig?.slug ?? "tasksnap";
+const EXPO_PROJECT_FOR_PROXY =
+  process.env.EXPO_PUBLIC_EXPO_PROJECT_FOR_PROXY ??
+  (EXPO_OWNER ? `@${EXPO_OWNER}/${EXPO_SLUG}` : undefined);
 
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)
@@ -19,10 +33,18 @@ function bytesToHex(bytes: Uint8Array): string {
     .join("");
 }
 
+const APP_SCHEME =
+  (Array.isArray(Constants.expoConfig?.scheme)
+    ? Constants.expoConfig?.scheme[0]
+    : Constants.expoConfig?.scheme) ?? "tasksnap";
+
+const isExpoGo = Constants.appOwnership === "expo";
+
 /**
  * Build a redirect URI that Facebook will accept.
  * - Web: use current origin
- * - Expo Go (native): use https://auth.expo.io/@owner/slug
+ * - Expo Go (native): Expo auth proxy
+ * - Dev/standalone builds: Facebook login success URL (https)
  */
 function getFacebookRedirectUri(): string {
   if (Platform.OS === "web") {
@@ -33,8 +55,21 @@ function getFacebookRedirectUri(): string {
     return "http://localhost:8081";
   }
 
-  // Expo Go: use the exact Expo auth proxy URL
-  return "https://auth.expo.io/@aronmh26/tasksnap";
+  if (isExpoGo) {
+    const proxyUri = EXPO_PROJECT_FOR_PROXY
+      ? `https://auth.expo.io/${EXPO_PROJECT_FOR_PROXY}`
+      : `https://auth.expo.io/@${FALLBACK_EXPO_OWNER}/${EXPO_SLUG}`;
+    if (proxyUri.startsWith("exp://")) {
+      console.warn(
+        "[facebookAuth] Expo auth proxy not detected. Set EXPO_PUBLIC_EXPO_ACCOUNT to your Expo username."
+      );
+    }
+    return proxyUri;
+  }
+
+  // Meta Web OAuth rejects custom schemes in redirect URI validation.
+  // For installed native builds, use Facebook's documented login success URL.
+  return "https://www.facebook.com/connect/login_success.html";
 }
 
 // ──── Public API ────────────────────────────────────────────────────────────
@@ -61,7 +96,7 @@ const facebookSignIn = async (): Promise<string> => {
     response_type: "token",
     scope: "email,public_profile",
     state,
-    display: "popup",
+    display: Platform.OS === "web" ? "popup" : "touch",
   });
   const authUrl = `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`;
 
@@ -104,4 +139,4 @@ const facebookSignIn = async (): Promise<string> => {
   return accessToken;
 };
 
-export { FACEBOOK_APP_ID, facebookSignIn };
+export { facebookSignIn };

@@ -16,8 +16,9 @@ import { RootStackParamList } from "../../../appRoot/navigation/RootNavigator";
 import { RouteNames } from "../../../appRoot/navigation/routes";
 import { ThemeColors, radii, spacing } from "../../../core/theme/theme";
 import { useTheme } from "../../../core/theme/ThemeProvider";
-import { upsertTask } from "../../../services/db";
 import { Task } from "../../../core/types/task";
+import { useAuthStore } from "../../auth/store/useAuthStore";
+import { useTasksStore } from "../store/useTasksStore";
 const DateTimePicker: any =
   Platform.OS === "web" ? null : require("@react-native-community/datetimepicker").default;
 
@@ -26,6 +27,8 @@ type Props = NativeStackScreenProps<RootStackParamList, typeof RouteNames.QuickC
 export default function QuickCaptureScreen({ navigation, route }: Props) {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const authUser = useAuthStore((s) => s.user);
+  const save = useTasksStore((s) => s.save);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("General");
   const [dueDate, setDueDate] = useState<Date | null>(null);
@@ -60,9 +63,10 @@ export default function QuickCaptureScreen({ navigation, route }: Props) {
         notificationId: null,
         imageUri: null,
         imageBase64: null,
+        userId: authUser?.id,
       };
 
-      await upsertTask(task);
+      await save(task);
       navigation.navigate(RouteNames.MainTabs);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to save task";
@@ -118,6 +122,10 @@ export default function QuickCaptureScreen({ navigation, route }: Props) {
           {dueDate ? dueDate.toLocaleString() : "Choose due date (optional)"}
         </Text>
       </TouchableOpacity>
+
+      <Text style={styles.helperText}>
+        Add a due date to get a friendly TaskSnap reminder 1 hour before the deadline.
+      </Text>
 
       {showDatePicker && DateTimePicker && (
         <DateTimePicker
@@ -222,6 +230,12 @@ const createStyles = (colors: ThemeColors) =>
   dateText: {
     color: colors.textPrimary,
     fontWeight: "500",
+  },
+  helperText: {
+    marginTop: spacing.sm,
+    color: colors.textMuted,
+    fontSize: 12,
+    lineHeight: 18,
   },
   primaryBtn: {
     marginTop: spacing.lg,

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { ThemeColors, radii, shadows, spacing } from "../../../core/theme/theme";
 import { useTheme } from "../../../core/theme/ThemeProvider";
 
@@ -86,7 +86,9 @@ export default function QuickAddTaskModal({ visible, initialDate, onClose, onCre
   const copyToPermanentStorage = async (sourceUri: string, prefix: string): Promise<string> => {
     const ext = sourceUri.split(".").pop()?.split("?")[0] || "jpg";
     const fileName = `${prefix}_${Date.now()}.${ext}`;
-    const permanentUri = `${(FileSystem as any).documentDirectory}${fileName}`;
+    const baseDir = FileSystem.documentDirectory ?? FileSystem.cacheDirectory;
+    if (!baseDir) throw new Error("Local storage is unavailable.");
+    const permanentUri = `${baseDir}${fileName}`;
     await FileSystem.copyAsync({ from: sourceUri, to: permanentUri });
     return permanentUri;
   };

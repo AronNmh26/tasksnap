@@ -1,11 +1,13 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { RouteNames } from "../../../appRoot/navigation/routes";
 import { ThemeColors, radii, spacing, shadows } from "../../../core/theme/theme";
 import { useTheme } from "../../../core/theme/ThemeProvider";
 import { useAuthStore } from "../../auth/store/useAuthStore";
+import * as FileSystem from "expo-file-system/legacy";
+import { getAllTasks } from "../../../services/db";
 
 type Props = any;
 
@@ -14,6 +16,9 @@ export default function ProfileScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { user, logout } = useAuthStore();
   const navigation = useNavigation<any>();
+  const [storageLoading, setStorageLoading] = useState(false);
+  const [storageBytes, setStorageBytes] = useState(0);
+  const [photoCount, setPhotoCount] = useState(0);
 
   const accountLabel =
     user?.provider === "google"
@@ -24,6 +29,45 @@ export default function ProfileScreen() {
 
   const darkModeStatus = mode === "dark" ? "On" : "Off";
   const notificationStatus = "Enabled";
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes <= 0) return "0 MB";
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`;
+  };
+
+  const refreshStorageUsage = useCallback(async () => {
+    setStorageLoading(true);
+    try {
+      const tasks = await getAllTasks();
+      const uris = tasks.map((t) => t.imageUri).filter(Boolean) as string[];
+      let total = 0;
+      let existingCount = 0;
+
+      for (const uri of uris) {
+        try {
+          const info = await FileSystem.getInfoAsync(uri);
+          if (info.exists && typeof info.size === "number") {
+            total += info.size;
+            existingCount += 1;
+          }
+        } catch {
+          // ignore missing or invalid files
+        }
+      }
+
+      setStorageBytes(total);
+      setPhotoCount(existingCount);
+    } finally {
+      setStorageLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshStorageUsage();
+    }, [refreshStorageUsage])
+  );
 
   const handleLogout = async () => {
     await logout();
@@ -90,12 +134,21 @@ export default function ProfileScreen() {
             </View>
             <View style={styles.menuContent}>
               <Text style={styles.menuLabel}>Storage</Text>
-              <Text style={styles.menuDetail}>42 MB used of 500 MB</Text>
+              <Text style={styles.menuDetail}>
+                {storageLoading
+                  ? "Calculating..."
+                  : photoCount > 0
+                    ? `${formatBytes(storageBytes)} across ${photoCount} local photo${photoCount > 1 ? "s" : ""}`
+                    : "No local photos stored"}
+              </Text>
             </View>
             <MaterialIcons name="chevron-right" size={20} color={colors.textSubtle} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate(RouteNames.HelpFaq)}
+          >
             <View style={styles.menuIcon}>
               <MaterialIcons name="help-outline" size={20} color="#ec4899" />
             </View>
@@ -106,7 +159,10 @@ export default function ProfileScreen() {
             <MaterialIcons name="chevron-right" size={20} color={colors.textSubtle} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate(RouteNames.PrivacyPolicy)}
+          >
             <View style={styles.menuIcon}>
               <MaterialIcons name="lock-outline" size={20} color="#6366f1" />
             </View>

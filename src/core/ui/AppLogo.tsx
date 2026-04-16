@@ -18,7 +18,7 @@ export default function AppLogo({ size = 96 }: AppLogoProps) {
 
   // Checkmark path scaled to icon
   const cx = half;
-  const cy = half;
+  const cy = half;9999
   const checkSize = s * 0.22;
   const checkX = cx - checkSize * 0.6;
   const checkY = cy + checkSize * 0.1;

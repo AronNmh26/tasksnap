@@ -10,10 +10,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../appRoot/navigation/RootNavigator";
 import { RouteNames } from "../../../appRoot/navigation/routes";
@@ -21,12 +22,22 @@ import { useTasksStore } from "../store/useTasksStore";
 import { getTaskById } from "../../../services/db";
 import { nowIso, toLocalReadable } from "../../../core/utils/date";
 import { Task } from "../../../core/types/task";
-import { cancelReminder, scheduleTaskReminder } from "../../../services/notifications";
+import { cancelReminder } from "../../../services/notifications";
 import { ThemeColors, radii, spacing, shadows } from "../../../core/theme/theme";
 import { useTheme } from "../../../core/theme/ThemeProvider";
-import { deleteAsync } from 'expo-file-system/legacy';
+import { useSettingsStore } from "../../settings/store/useSettingsStore";
 const DateTimePicker: any =
   Platform.OS === "web" ? null : require("@react-native-community/datetimepicker").default;
+
+function mergeDateAndTime(datePart: Date, timePart: Date): Date {
+  const merged = new Date(datePart);
+  merged.setHours(timePart.getHours(), timePart.getMinutes(), 0, 0);
+  return merged;
+}
+
+function formatTime(date: Date): string {
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof RouteNames.TaskDetails>;
 
@@ -35,23 +46,36 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { taskId } = route.params;
   const { save, remove } = useTasksStore();
+  const { notificationsEnabled, loadSettings } = useSettingsStore();
   const [task, setTask] = useState<Task | null>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [showPicker, setShowPicker] = useState(false);
+  const [datePart, setDatePart] = useState<Date>(new Date());
+  const [timePart, setTimePart] = useState<Date>(new Date());
+  const [showWebDatePicker, setShowWebDatePicker] = useState(false);
+  const [showWebTimePicker, setShowWebTimePicker] = useState(false);
+  const [viewMonth, setViewMonth] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [status, setStatus] = useState<Task["status"]>("pending");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
+    loadSettings();
     getTaskById(taskId).then((t) => {
       setTask(t);
       if (t) {
         setTitle(t.title);
         setCategory(t.category ?? "");
         setDueDate(t.dueAt ? new Date(t.dueAt) : null);
+        if (t.dueAt) {
+          const parsed = new Date(t.dueAt);
+          setDatePart(parsed);
+          setTimePart(parsed);
+          setViewMonth(new Date(parsed.getFullYear(), parsed.getMonth(), 1));
+        }
         setStatus(t.status);
         setImageUri(t.imageUri ?? null);
         setImageUrl(t.imageUrl ?? null);
@@ -66,10 +90,41 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
     setTitle(currentTask.title);
     setCategory(currentTask.category ?? "");
     setDueDate(currentTask.dueAt ? new Date(currentTask.dueAt) : null);
+    if (currentTask.dueAt) {
+      const parsed = new Date(currentTask.dueAt);
+      setDatePart(parsed);
+      setTimePart(parsed);
+      setViewMonth(new Date(parsed.getFullYear(), parsed.getMonth(), 1));
+    } else {
+      const now = new Date();
+      setDatePart(now);
+      setTimePart(now);
+      setViewMonth(new Date(now.getFullYear(), now.getMonth(), 1));
+    }
     setStatus(currentTask.status);
     setImageUri(currentTask.imageUri ?? null);
     setImageUrl(currentTask.imageUrl ?? null);
   };
+
+  const dayCells = useMemo(() => {
+    const firstWeekday = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1).getDay();
+    const daysInMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 0).getDate();
+    return Array.from({ length: 42 }, (_, idx) => {
+      const d = idx - firstWeekday + 1;
+      if (d < 1 || d > daysInMonth) return null;
+      return new Date(viewMonth.getFullYear(), viewMonth.getMonth(), d);
+    });
+  }, [viewMonth]);
+
+  const timeOptions = useMemo(() => {
+    return Array.from({ length: 48 }, (_, idx) => {
+      const h = Math.floor(idx / 2);
+      const m = idx % 2 === 0 ? 0 : 30;
+      const d = new Date(timePart);
+      d.setHours(h, m, 0, 0);
+      return d;
+    });
+  }, [timePart]);
 
   const onSave = async () => {
     if (!task) return;
@@ -83,9 +138,14 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
       imageUrl,
       updatedAt: nowIso(),
     };
-    await save(updated);
-    setTask(updated);
-    setIsEditing(false);
+    try {
+      await save(updated);
+      setTask(updated);
+      setIsEditing(false);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to save task";
+      Alert.alert("Error", msg);
+    }
   };
 
   const onToggleDone = async () => {
@@ -106,33 +166,6 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
     await save(updated);
     setTask(updated);
     setStatus(updated.status);
-  };
-
-  const onAddDemoReminder = async () => {
-    if (!task) return;
-
-    // Demo: set due date 10 minutes from now, reminder 5 minutes before
-    const due = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    const reminderMinutes = 5;
-
-    await cancelReminder(task.notificationId);
-
-    const notificationId = await scheduleTaskReminder({
-      title: task.title,
-      dueAtIso: due,
-      reminderMinutes,
-    });
-
-    const updated: Task = {
-      ...task,
-      dueAt: due,
-      reminderMinutes,
-      notificationId,
-      updatedAt: nowIso(),
-    };
-
-    await save(updated);
-    setTask(updated);
   };
 
   const onDelete = async () => {
@@ -156,7 +189,7 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
           onPress: async () => {
             try {
               if (imageUri) {
-                await deleteAsync(imageUri, { idempotent: true });
+                await FileSystem.deleteAsync(imageUri, { idempotent: true });
               }
 
               // Update the task to remove the imageUri
@@ -185,7 +218,9 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
   const copyToPermanentStorage = async (sourceUri: string, prefix: string): Promise<string> => {
     const ext = sourceUri.split(".").pop()?.split("?")[0] || "jpg";
     const fileName = `${prefix}_${Date.now()}.${ext}`;
-    const permanentUri = `${(FileSystem as any).documentDirectory}${fileName}`;
+    const baseDir = FileSystem.documentDirectory ?? FileSystem.cacheDirectory;
+    if (!baseDir) throw new Error("Local storage is unavailable.");
+    const permanentUri = `${baseDir}${fileName}`;
     await FileSystem.copyAsync({ from: sourceUri, to: permanentUri });
     return permanentUri;
   };
@@ -288,19 +323,40 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
             />
           </View>
 
-          <TouchableOpacity
-            style={styles.dateInput}
-            onPress={() => isEditing && setShowPicker(true)}
-            disabled={!isEditing}
-          >
-            <View style={styles.inputIcon}>
-              <MaterialIcons name="event" size={20} color={dueDate ? colors.primary : colors.textSubtle} />
+          {DateTimePicker ? (
+            <TouchableOpacity
+              style={styles.dateInput}
+              onPress={() => isEditing && setShowPicker(true)}
+              disabled={!isEditing}
+            >
+              <View style={styles.inputIcon}>
+                <MaterialIcons name="event" size={20} color={dueDate ? colors.primary : colors.textSubtle} />
+              </View>
+              <Text style={[styles.dateText, { color: dueDate ? colors.textPrimary : colors.textSubtle }]}>
+                {dueDate ? dueDate.toLocaleString() : "Set due date and time"}
+              </Text>
+              <MaterialIcons name="arrow-drop-down" size={20} color={colors.textSubtle} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.webRow}>
+              <TouchableOpacity
+                style={styles.webSelector}
+                onPress={() => isEditing && setShowWebDatePicker(true)}
+                disabled={!isEditing}
+              >
+                <MaterialIcons name="event" size={18} color={colors.primary} />
+                <Text style={styles.webSelectorText}>{datePart.toLocaleDateString()}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.webSelector}
+                onPress={() => isEditing && setShowWebTimePicker(true)}
+                disabled={!isEditing}
+              >
+                <MaterialIcons name="schedule" size={18} color={colors.primary} />
+                <Text style={styles.webSelectorText}>{formatTime(timePart)}</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={[styles.dateText, { color: dueDate ? colors.textPrimary : colors.textSubtle }]}>
-              {dueDate ? dueDate.toLocaleString() : "Set due date and time"}
-            </Text>
-            <MaterialIcons name="arrow-drop-down" size={20} color={colors.textSubtle} />
-          </TouchableOpacity>
+          )}
           {showPicker && DateTimePicker && (
             <DateTimePicker
               value={dueDate || new Date()}
@@ -408,17 +464,129 @@ export default function TaskDetailsScreen({ navigation, route }: Props) {
           </View>
         ) : null}
 
+        <View style={styles.reminderInfoCard}>
+          <MaterialIcons
+            name="notifications-active"
+            size={18}
+            color={notificationsEnabled ? colors.primary : colors.textSubtle}
+          />
+          <Text style={styles.reminderInfoText}>
+            {notificationsEnabled
+              ? "TaskSnap will remind you 1 hour before the deadline when this task has a due date."
+              : "Turn on notifications in Settings to receive 1-hour deadline reminders."}
+          </Text>
+        </View>
+
         <View style={styles.utilityRow}>
-          <TouchableOpacity style={styles.utilityBtn} onPress={onAddDemoReminder}>
-            <MaterialIcons name="alarm" size={18} color={colors.textPrimary} />
-            <Text style={styles.utilityText}>Add Demo Reminder</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.utilityBtnDanger} onPress={onDelete}>
             <MaterialIcons name="delete" size={18} color="#fff" />
             <Text style={styles.utilityTextDanger}>Delete Task</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {!DateTimePicker ? (
+        <Modal
+          visible={showWebDatePicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowWebDatePicker(false)}
+        >
+          <View style={styles.innerBackdrop}>
+            <View style={styles.innerCard}>
+              <View style={styles.calendarHeader}>
+                <TouchableOpacity
+                  style={styles.monthNav}
+                  onPress={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1))}
+                >
+                  <MaterialIcons name="chevron-left" size={22} color={colors.textPrimary} />
+                </TouchableOpacity>
+                <Text style={styles.innerTitle}>
+                  {viewMonth.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
+                </Text>
+                <TouchableOpacity
+                  style={styles.monthNav}
+                  onPress={() => setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1))}
+                >
+                  <MaterialIcons name="chevron-right" size={22} color={colors.textPrimary} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.weekRow}>
+                {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((w) => (
+                  <Text key={w} style={styles.weekday}>{w}</Text>
+                ))}
+              </View>
+
+              <View style={styles.dayGrid}>
+                {dayCells.map((d, idx) => {
+                  const active =
+                    !!d &&
+                    d.getDate() === datePart.getDate() &&
+                    d.getMonth() === datePart.getMonth() &&
+                    d.getFullYear() === datePart.getFullYear();
+                  return (
+                    <TouchableOpacity
+                      key={`dc-${idx}`}
+                      disabled={!d}
+                      style={[styles.dayCell, !d && styles.dayCellDisabled, active && styles.dayCellActive]}
+                      onPress={() => {
+                        if (!d) return;
+                        setDatePart(d);
+                        setDueDate(mergeDateAndTime(d, timePart));
+                        setShowWebDatePicker(false);
+                      }}
+                    >
+                      <Text style={[styles.dayCellText, active && styles.dayCellTextActive]}>{d ? d.getDate() : ""}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <TouchableOpacity style={styles.closeBtn} onPress={() => setShowWebDatePicker(false)}>
+                <Text style={styles.closeText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      ) : null}
+
+      {!DateTimePicker ? (
+        <Modal
+          visible={showWebTimePicker}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowWebTimePicker(false)}
+        >
+          <View style={styles.innerBackdrop}>
+            <View style={styles.innerCard}>
+              <Text style={styles.innerTitle}>Select Time</Text>
+              <ScrollView style={styles.timeList}>
+                {timeOptions.map((opt, idx) => {
+                  const active =
+                    opt.getHours() === timePart.getHours() && opt.getMinutes() === timePart.getMinutes();
+                  return (
+                    <TouchableOpacity
+                      key={`t-${idx}`}
+                      style={[styles.timeRow, active && styles.timeRowActive]}
+                      onPress={() => {
+                        setTimePart(opt);
+                        setDueDate(mergeDateAndTime(datePart, opt));
+                        setShowWebTimePicker(false);
+                      }}
+                    >
+                      <Text style={[styles.timeText, active && styles.timeTextActive]}>{formatTime(opt)}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              <TouchableOpacity style={styles.closeBtn} onPress={() => setShowWebTimePicker(false)}>
+                <Text style={styles.closeText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      ) : null}
 
       <View style={styles.bottomBar}>
         <TouchableOpacity
@@ -472,6 +640,29 @@ const createStyles = (colors: ThemeColors) =>
     subtitleInput: { flex: 1, color: colors.textPrimary, fontSize: 16, fontWeight: "500" },
     dateInput: { ...rowCenter, backgroundColor: colors.glass, borderRadius: radii.lg, ...glassBorder(colors), paddingHorizontal: spacing.md, paddingVertical: spacing.sm, marginBottom: spacing.md },
     dateText: { flex: 1, fontSize: 16, fontWeight: "500" },
+    webRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md },
+    webSelector: { flex: 1, ...rowCenter, gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radii.lg, backgroundColor: colors.glass, ...glassBorder(colors) },
+    webSelectorText: { color: colors.textPrimary, fontWeight: "600" },
+    innerBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "center", padding: spacing.lg },
+    innerCard: { borderRadius: radii.lg, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.borderGlass, padding: spacing.md, gap: spacing.sm, ...shadows.soft },
+    innerTitle: { color: colors.textPrimary, fontSize: 16, fontWeight: "700", textAlign: "center" },
+    calendarHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+    monthNav: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center", backgroundColor: colors.glass, ...glassBorder(colors) },
+    weekRow: { flexDirection: "row", marginBottom: spacing.xs },
+    weekday: { flex: 1, textAlign: "center", color: colors.textSubtle, fontSize: 11, fontWeight: "600" },
+    dayGrid: { flexDirection: "row", flexWrap: "wrap", gap: 2 },
+    dayCell: { width: "13.7%", aspectRatio: 1, borderRadius: radii.sm, alignItems: "center", justifyContent: "center", backgroundColor: colors.glass, ...glassBorder(colors) },
+    dayCellDisabled: { opacity: 0 },
+    dayCellActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+    dayCellText: { color: colors.textPrimary, fontWeight: "600", fontSize: 12 },
+    dayCellTextActive: { color: "#fff", fontWeight: "700" },
+    timeList: { maxHeight: 260 },
+    timeRow: { height: 40, borderRadius: radii.md, justifyContent: "center", paddingHorizontal: spacing.md, backgroundColor: colors.glass, ...glassBorder(colors), marginBottom: spacing.xs },
+    timeRowActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+    timeText: { color: colors.textPrimary, fontWeight: "600" },
+    timeTextActive: { color: "#fff", fontWeight: "700" },
+    closeBtn: { marginTop: spacing.xs, height: 40, borderRadius: radii.md, alignItems: "center", justifyContent: "center", backgroundColor: colors.glass, ...glassBorder(colors) },
+    closeText: { color: colors.textPrimary, fontWeight: "700" },
     statusCard: { backgroundColor: colors.glass, borderRadius: radii.xl, ...glassBorder(colors), padding: spacing.lg, gap: spacing.md, ...shadows.soft },
     statusRow: { ...rowCenter, justifyContent: "space-between" },
     statusLabel: { color: colors.textSubtle, fontSize: 12, fontWeight: "600" },
@@ -493,6 +684,8 @@ const createStyles = (colors: ThemeColors) =>
     imageTag: { position: "absolute", top: 14, left: 14, ...rowCenter, gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: radii.pill, backgroundColor: "rgba(0,0,0,0.5)" },
     imageTagText: { color: "#fff", fontSize: 11, fontWeight: "600" },
     deletePhotoBtn: { position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(239,68,68,0.8)", alignItems: "center", justifyContent: "center" },
+    reminderInfoCard: { marginTop: spacing.lg, flexDirection: "row", gap: spacing.sm, padding: spacing.md, borderRadius: radii.lg, backgroundColor: colors.glass, ...glassBorder(colors) },
+    reminderInfoText: { flex: 1, color: colors.textMuted, fontSize: 12, lineHeight: 18, fontWeight: "600" },
     utilityRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.lg },
     imageActionsRow: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.md },
     utilityBtn: { ...btnBase(colors), backgroundColor: colors.glass },

@@ -16,14 +16,14 @@ export const darkColors = {
 export const lightColors = {
   primary: "#1152d4",
   primaryLight: "#3a7bd5",
-  background: "#f6f6f8",
+  background: "#eef2f6",
   surface: "#ffffff",
-  surfaceAlt: "#eef1f6",
-  textPrimary: "#0f172a",
-  textMuted: "rgba(15,23,42,0.7)",
-  textSubtle: "rgba(15,23,42,0.5)",
-  borderGlass: "rgba(15,23,42,0.12)",
-  glass: "rgba(255,255,255,0.7)",
+  surfaceAlt: "#e8edf5",
+  textPrimary: "#0b1220",
+  textMuted: "rgba(11,18,32,0.78)",
+  textSubtle: "rgba(11,18,32,0.6)",
+  borderGlass: "rgba(11,18,32,0.16)",
+  glass: "rgba(255,255,255,0.9)",
 };
 
 export type ThemeColors = typeof darkColors;

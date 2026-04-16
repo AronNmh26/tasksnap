@@ -1,12 +1,16 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { ThemeColors, radii, spacing, shadows } from "../../../core/theme/theme";
 import { useTheme } from "../../../core/theme/ThemeProvider";
-import { deleteAsync } from 'expo-file-system/legacy';
+import * as FileSystem from "expo-file-system/legacy";
 import { getAllTasks, upsertTask } from "../../../services/db";
 import { nowIso } from "../../../core/utils/date";
 import { useSettingsStore } from "../store/useSettingsStore";
+import { useAuthStore } from "../../auth/store/useAuthStore";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { RouteNames } from "../../../appRoot/navigation/routes";
+import { cancelAllReminders, ensureNotificationPermission } from "../../../services/notifications";
 
 const CATEGORIES = ["General", "Personal", "Academic", "Health", "Finance", "Work"];
 const REMINDER_OPTIONS = [
@@ -20,14 +24,19 @@ const REMINDER_OPTIONS = [
 export default function SettingsScreen() {
   const { mode, colors, setMode } = useTheme();
   const [darkMode, setDarkMode] = useState(mode === "dark");
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoSync, setAutoSync] = useState(false);
+  const [storageBytes, setStorageBytes] = useState(0);
+  const [photoCount, setPhotoCount] = useState(0);
+  const [storageLoading, setStorageLoading] = useState(false);
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const navigation = useNavigation<any>();
+  const { deleteAccount } = useAuthStore();
 
   const {
     defaultCategory,
     defaultReminderMinutes,
     showCompletedTasks,
+    notificationsEnabled,
     loadSettings,
     updateSetting,
   } = useSettingsStore();
@@ -35,6 +44,49 @@ export default function SettingsScreen() {
   useEffect(() => {
     loadSettings();
   }, []);
+
+  useEffect(() => {
+    setDarkMode(mode === "dark");
+  }, [mode]);
+
+  const formatBytes = (bytes: number): string => {
+    if (bytes <= 0) return "0 MB";
+    const mb = bytes / (1024 * 1024);
+    return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`;
+  };
+
+  const refreshStorageUsage = useCallback(async () => {
+    setStorageLoading(true);
+    try {
+      const tasks = await getAllTasks();
+      const uris = tasks.map((t) => t.imageUri).filter(Boolean) as string[];
+      let total = 0;
+      let existingCount = 0;
+
+      for (const uri of uris) {
+        try {
+          const info = await FileSystem.getInfoAsync(uri);
+          if (info.exists && typeof info.size === "number") {
+            total += info.size;
+            existingCount += 1;
+          }
+        } catch {
+          // ignore missing or invalid files
+        }
+      }
+
+      setStorageBytes(total);
+      setPhotoCount(existingCount);
+    } finally {
+      setStorageLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshStorageUsage();
+    }, [refreshStorageUsage])
+  );
 
   const handleResetData = () => {
     Alert.alert(
@@ -66,7 +118,7 @@ export default function SettingsScreen() {
                 try {
                   // Delete the photo file from local storage
                   if (task.imageUri) {
-                    await deleteAsync(task.imageUri, { idempotent: true });
+                    await FileSystem.deleteAsync(task.imageUri, { idempotent: true });
                   }
 
                   // Update the task to remove imageUri
@@ -90,15 +142,71 @@ export default function SettingsScreen() {
                   "Photos Deleted",
                   `Successfully deleted ${deletedCount} photo${deletedCount !== 1 ? 's' : ''}. Storage space has been freed up.`
                 );
+                refreshStorageUsage();
               } else {
                 Alert.alert(
                   "Partial Success",
                   `Deleted ${deletedCount} photo${deletedCount !== 1 ? 's' : ''}, but ${errorCount} failed. Some storage space may still be occupied.`
                 );
+                refreshStorageUsage();
               }
             } catch (error) {
               console.error("Error deleting photos:", error);
               Alert.alert("Error", "Failed to delete photos. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleToggleNotifications = async (value: boolean) => {
+    if (!value) {
+      await cancelAllReminders();
+      updateSetting("notificationsEnabled", false);
+      return;
+    }
+
+    const status = await ensureNotificationPermission();
+    if (status !== "granted") {
+      Alert.alert(
+        "Notifications Disabled",
+        "Permission was not granted. You can enable it later in system settings."
+      );
+      updateSetting("notificationsEnabled", false);
+      return;
+    }
+
+    updateSetting("notificationsEnabled", true);
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account & Data",
+      "This will permanently delete your account and all task data. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Account",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              Alert.alert("Deleting Account", "Please wait while we remove your data...");
+
+              const allTasks = await getAllTasks();
+              for (const task of allTasks) {
+                if (task.imageUri) {
+                  try {
+                    await FileSystem.deleteAsync(task.imageUri, { idempotent: true });
+                  } catch {
+                    // Ignore local deletion errors; account deletion should proceed.
+                  }
+                }
+              }
+
+              await deleteAccount();
+            } catch (error: any) {
+              Alert.alert("Error", error?.message ?? "Failed to delete account.");
             }
           },
         },
@@ -152,7 +260,7 @@ export default function SettingsScreen() {
             </View>
             <Switch
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
+              onValueChange={handleToggleNotifications}
               trackColor={{ false: colors.surfaceAlt, true: colors.primary }}
               thumbColor={notificationsEnabled ? "#93c5fd" : "#94a3b8"}
             />
@@ -254,9 +362,22 @@ export default function SettingsScreen() {
             <View style={styles.menuContent}>
               <Text style={styles.menuLabel}>Storage Usage</Text>
               <View style={styles.storageBar}>
-                <View style={styles.storageUsed} />
+                <View
+                  style={[
+                    styles.storageUsed,
+                    {
+                      width: storageBytes > 0 ? "100%" : "0%",
+                    },
+                  ]}
+                />
               </View>
-              <Text style={styles.menuDetail}>42 MB of 500 MB</Text>
+              <Text style={styles.menuDetail}>
+                {storageLoading
+                  ? "Calculating..."
+                  : photoCount > 0
+                    ? `${formatBytes(storageBytes)} across ${photoCount} local photo${photoCount > 1 ? "s" : ""}`
+                    : "No local photos stored"}
+              </Text>
             </View>
           </View>
 
@@ -275,7 +396,10 @@ export default function SettingsScreen() {
         {/* About */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate(RouteNames.HelpFaq)}
+          >
             <View style={styles.menuIcon}>
               <MaterialIcons name="help-outline" size={20} color="#ec4899" />
             </View>
@@ -286,7 +410,10 @@ export default function SettingsScreen() {
             <MaterialIcons name="chevron-right" size={20} color={colors.textSubtle} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate(RouteNames.PrivacyPolicy)}
+          >
             <View style={styles.menuIcon}>
               <MaterialIcons name="lock-outline" size={20} color="#6366f1" />
             </View>
@@ -306,6 +433,17 @@ export default function SettingsScreen() {
               <Text style={styles.menuDetail}>1.0.0</Text>
             </View>
           </View>
+
+          <TouchableOpacity style={styles.menuItem} onPress={handleDeleteAccount}>
+            <View style={styles.menuIcon}>
+              <MaterialIcons name="delete-forever" size={20} color="#ef4444" />
+            </View>
+            <View style={styles.menuContent}>
+              <Text style={[styles.menuLabel, { color: "#ef4444" }]}>Delete Account & Data</Text>
+              <Text style={styles.menuDetail}>Permanently remove your data</Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={20} color="rgba(239,68,68,0.6)" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.footer} />

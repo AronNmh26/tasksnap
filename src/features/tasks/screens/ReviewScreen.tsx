@@ -4,12 +4,19 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { ThemeColors, radii, spacing } from "../../../core/theme/theme";
 import { useTheme } from "../../../core/theme/ThemeProvider";
 import { useTasksStore } from "../store/useTasksStore";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function ReviewScreen() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const { tasks } = useTasksStore();
+  const { tasks, refresh } = useTasksStore();
   const [filter, setFilter] = useState<"ongoing" | "completed">("ongoing");
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refresh().catch(console.error);
+    }, [refresh])
+  );
 
   // Calculate summary stats
   const stats = useMemo(() => {
@@ -20,7 +27,20 @@ export default function ReviewScreen() {
 
   // Filter tasks based on selected filter
   const filteredTasks = useMemo(() => {
-    return tasks.filter((t) => t.status === filter).slice(0, 10);
+    const targetStatus = filter === "ongoing" ? "pending" : "completed";
+    const items = tasks.filter((t) => t.status === targetStatus);
+
+    if (targetStatus === "pending") {
+      // Upcoming first for ongoing view.
+      return items.sort((a, b) => {
+        const aDue = a.dueAt ? Date.parse(a.dueAt) : Number.MAX_SAFE_INTEGER;
+        const bDue = b.dueAt ? Date.parse(b.dueAt) : Number.MAX_SAFE_INTEGER;
+        return aDue - bDue;
+      });
+    }
+
+    // Recent completion history first.
+    return items.sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
   }, [tasks, filter]);
 
   const categoryColor: { [key: string]: string } = {
@@ -83,7 +103,9 @@ export default function ReviewScreen() {
         {filteredTasks.length === 0 && (
           <View style={styles.emptyState}>
             <MaterialIcons name="check" size={48} color={colors.textSubtle} />
-            <Text style={styles.emptyText}>No {filter} tasks</Text>
+            <Text style={styles.emptyText}>
+              {filter === "ongoing" ? "No ongoing tasks" : "No completed tasks"}
+            </Text>
           </View>
         )}
 

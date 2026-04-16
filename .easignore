@@ -1,0 +1,20 @@
+# Keep EAS upload focused on runtime app code/assets
+node_modules/
+
+# Local artifacts and OCR datasets not needed for mobile builds
+tmp/
+*.traineddata
+eng.traineddata
+
+# Tooling/docs not required to compile app binary
+tools/
+docs/
+SESSION_UPDATE.md
+AI_SETUP.md
+
+# Test-only files
+__tests__/
+test/
+
+# Backend workspace not required for Expo app compile
+functions/

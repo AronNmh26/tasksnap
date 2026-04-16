@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from "react
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from "expo-file-system/legacy";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RouteNames } from "../../../appRoot/navigation/routes";
@@ -39,13 +39,19 @@ export default function CameraCaptureScreen() {
     );
   }
 
+  const getBaseDirectory = (): string | null => {
+    return FileSystem.documentDirectory ?? FileSystem.cacheDirectory ?? null;
+  };
+
   const capture = async () => {
     if (!cameraRef.current) return;
     const photo = await cameraRef.current.takePictureAsync({ quality: 1, skipProcessing: false });
     
     // Copy photo to permanent app storage
     const fileName = `task_photo_${Date.now()}.jpg`;
-    const permanentUri = `${(FileSystem as any).documentDirectory}${fileName}`;
+    const baseDir = getBaseDirectory();
+    if (!baseDir) throw new Error("Local storage is unavailable.");
+    const permanentUri = `${baseDir}${fileName}`;
     
     try {
       console.log('📸 Copying camera photo to permanent storage:', permanentUri);
@@ -76,7 +82,9 @@ export default function CameraCaptureScreen() {
       
       // Copy library photo to permanent app storage
       const fileName = `task_photo_library_${Date.now()}.jpg`;
-      const permanentUri = `${(FileSystem as any).documentDirectory}${fileName}`;
+      const baseDir = getBaseDirectory();
+      if (!baseDir) throw new Error("Local storage is unavailable.");
+      const permanentUri = `${baseDir}${fileName}`;
       
       try {
         console.log('📚 Copying library photo to permanent storage:', permanentUri);

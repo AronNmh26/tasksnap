@@ -1,0 +1,276 @@
+
+
+-- Page 1 --
+[J] [J] [J
+Mobile Application
+[J]
+Development in the Al Era
+Moving from Syntax Memorization to System Architecture
+Week 07: Code Review Debugging and Refactoring
+N
+Course Code: 1305216
+Credits: 3 (2-2-5)
+Prerequisites: Basic programming (any language),
+Basic understanding of Web / API concepts (recommended) By: Vittayasak Rujivorakul
+
+
+
+-- Page 2 --
+Communication Channel
+* Microsoft Teams: Streaming, Assignment
+If k 1 & MS.Team Code
+
+Chat with AI-TA
+* Communication @:F5@
+* FB Message: vittayasak rujivorakul ALTER
+* Email: vittayasak@mfu.ac.th rd ha
+@F:aiH
+
+
+
+-- Page 3 --
+Final Exam 28 Apr - 09 May 2025
+* 13-Mar-2026 Midterm Exam (Lab Test)
+* 27-Mar-2026 Performance, Cost & Reliability
+* 03-Apr-2026 Testing & Quality Assurance
+* 10-Apr-2026 Deployment & Application Distribution
+* 17-Apr-2026 Product Thinking & Continuous Improvement
+* 24-Apr-2026 Demo Day
+Makeup Class
+* Week 07 Code Review Debugging & Refactoring
+* Week 08 Mobile Security Fundamental ;
+
+
+
+-- Page 4 --
+Code Review, Debugging
+
+& Refactoring
+
+Surviving the ‘Al Hangover’
+
+For the last three weeks, we've generated screens and APIs with Al,
+moving at an incredible speed. Now, we face the consequence: a codebase
+full of duplied logic, hardcoded strings, and cryptic variable names.
+
+This week, we learn to clean up the mess. We pivot from creation to
+maintenance.
+
+
+
+-- Page 5 --
+The ‘Black Box’ Danger
+
+A common side effect of rapid Al generation is
+
+“Code Blindness"—the habit of copying and
+
+committing code without understanding it
+
+line-by-line. This leads to fragile applications \
+
+that work by coincidence and break :
+unexpectedly. From this point forward, we will
+
+follow one rule: yn
+You are not allowed to if ©
+commit code you cannot
+
+explain to the person
+
+sitting next to you.
+
+
+
+-- Page 6 --
+Your Job Security Is Reading, Not Writing
+
+In an era where Al handles boilerplate, a developer's value shifts. Your job is no
+
+longer just to write code, but to review, question, and improve it.
+
+Key Insight: The most dangerous developer in 2024 is not the one who can't
+
+code; it's the one who generates 1,000 lines of code they don’t understand
+
+and commits it to production. You are the quality gate.
+
+Code Generation | Code Quality
+(A) iy © Ne SR (You)
+
+/L__ \
+EET TERT SS EE SEE
+
+
+
+-- Page 7 --
+‘ []
+The Cure, Part 1: How to ‘Read’ Al Code
+Before you can fix code, you must learn to read it with a critical eye. Al is messy; it leaves digital scaffolding and
+cryptic clues behind. Your first pass on any generated code should be a hunt for these common “code smells":
+* Vague Variable Names: Did the Al name a iw ATigenersted Code ropa A
+variable “data”, "item", or “x? Rename it to be <zgoor ort { utils } from './helpers's>// Unused import
+descriptive, like *userProfile" or Lh i Taga}
+~ : © function processtoto (Geta) { // Vague variable name
+productList’. if (data.length ==="8)"return [];
+¢ Magic Numbers: Did the Al write "if (status Ben CREE) tH Gees 4
+==81)¥or *SizedBox (height: 16)? These if gem B=); // Magic number
+Ph return true;
+numbers lack context. Refactor them into }
+named constants or enums like “if (status == ro el
+Status.active) 1 Const double // const temp = calculate(filtered); // Dead code comment
+paddingMedium = 16.0". :
+: return filtered.map(user => ({
+« Dead Code: Al often leaves unused imports, Ld: Ruzer. Loni
+variables, or functions from previous attempts. isActive: User.status === 2 // Magic number
+Delete them aggressively. } 6
+export default processData;
+
+
+
+-- Page 8 --
+From Cryptic to Clear
+Applying simple fixes for code smells transforms an unmaintainable file into a
+professional one. This is the first step of taking ownership of Al-generated code.
+Al-Generated Code Human-Refactored Code
+- {utils} fhelpers'; const Odenstatus = {
+PENDING: 1,
+function processata(ill) { —> SHIRE: 2, —_
+f (data.status == 2) { DELIVERED: 3, X
+1 \
+; I \
+1p function processOrder (GREER) {
+if (order.status == DRdENSEAtUSUSHIPPED) {
+Ii
+}
+
+
+
+-- Page 9 --
+The Cure, Part 2: Debugging with Al
+When you encounter a bug, your first instinct might be to paste the code into an Al and say, “Fix this.”
+This is a mistake. It reinforces code blindness and often leads to superficial patches rather than true
+solutions. Instead, use Al as your “Rubber Duck”—a partner to explain the problem to you.
+The Process:
+1. Isolate: Identify the exact error message and stack trace.
+2. Explain: Prompt the Al to explain why the error is happening in the context of your code.
+3. Analyze: Review the Al's explanation. Does it make sense? Is it pointing to a fundamental logic
+error?
+4. Implement: Apply the fix once you understand the root cause.
+& Ll OO |J® || Ql) ©
+Paste to Al with Analyze :
+Error Log Copy Error “Explain Why” Explanation Implement Fix
+Prompt
+
+
+
+-- Page 10 --
+The ‘Explain, Then Fix' Prompt
+To avoid getting a superficial patch, use a prompt that forces the Al to teach you first. This is the
+difference between a junior and senior developer's approach.
+Act as a senior mobile developer. I am getting the following error in my
+application:
+[PASTE FULL ERROR STACK TRACE HERE]"
+Here is the relevant code from [FILENAME]:
+* [PASTE RELEVANT CODE SNIPPET]®
+First, explain step-by-step *why* this error is occurring. After you have
+explained the root cause, then suggest a fix.
+[or Be skeptical if the Al's only solution is to wrap the broken code in a “try-catch® block. This often
+hides the error instead of solving it.
+
+
+
+-- Page 11 --
+The Cure, Part 3: Refactoring for Maintainability
+Refactoring is the process of restructuring existing code without changing its external behavior. It's how
+we fight “code rot” and make our app maintainable for the long term.
+The Golden Rule: DRY (Don't Repeat Yourself)
+Al loves to repeat itself. It will happily generate the same 50-line card layout in three different files
+instead of creating one reusable component. Your job is to spot these patterns and eliminate duplication.
+A Key principle: If your Ul file contains business logic or API calls, refactor immediately. This is a
+violation of “Separation of Concerns.”
+Duplicated Code (Before) Reusable Component (After) Referenced Components
+TER
+~~
+We ZANT
+CRETE) Ry
+ie i sl] 4
+ils Fe Zen SS =
+
+
+
+-- Page 12 --
+From Repetition to Reuse
+Identifying and extracting repeated Ul code into a separate, reusable component is one of an
+app developer's most common and valuable refactoring tasks.
+Before (Al's Tendency) After (Your Job)
+
+HomeScreen.dart Shared/BottomNavBar.dart
+
+items: [
+
+Hot temtavigationfar ten(fcon: Tcen(lcons.hose), label: Hose"), lass BottowMavBar extends Statelesskidget
+
+BottoatlaeigatiooBarTteo( icon: Icon(Irens.person), label: Profile’), override
+
+Bottowlavigationdar Ttea(icon: Icon{lcons. settings), label: Settings’) Widget bulld(Bulldontext context) (
+
+) Sturn Bot conhavigationdar
+
+Bottoalavigat londar ten icen: Tcon(Tcans. person), Tabet: Profile’)
+Bottowtavigationtar ten(icon: Icon(Lcons. Settings), label: ‘Settings
+
+ProfileScreen.dart
+
+stews: |
+
+Bot towlavigationdar Ttea(icon: Ican(Icons.hose), Label: Hone’),
+
+BottowHavigationBariten( icon: Icon(Icons.persen), label: ‘Profile'), HomeScreen.dart
+
+BottowHavigationdar Tten(Lcon: con(icons. settings), Label: 'Settings') Te
+
+" ProfileScreen.dart
+
+SettingsScreen.dart
+ottearayTostianiget Co PRE SS
+
+ atiomtaxlgationtarTten(icon: Teon(lcons. howe), Label: ‘ae
+
+BottaetiavigetionBorTteo(icon: con(1cons person), Lobel: “Prafile ,
+
+ ottomtavigationtar ten sco Tcon(1cens. settings), label: 'Settings’) SettingsScreen.dart
+
+
+
+-- Page 13 --
+. .
+
+Using Al to Refactor its Own Mess
+You don't have to do all the refactoring manually. Once you've identified an area that violates the
+DRY principle or is too complex, you can ask the Al to help you clean it up.
+
+A Good Prompt for Refactoring
+
+Here is the code for my ‘UserProfile.js” Ze >
+
+component. SE = (J
+
+[PASTE YOUR MESSY CODE] 0 oD
+
+0 & (7
+
+This file feels too long and is doing too many ZK YN A
+
+things. Please identify 3 areas where I might oo) TR) ee
+
+be violating the DRY principle or Separation of (7%) 008 ive
+
+Concerns. For each area, suggest a specific vs oA NY, °&
+
+refactoring, such as extracting logic into a ny ‘se, Va —_—
+
+helper function or creating a new reusable QN =)
+
+component.
+

@@ -1,0 +1,401 @@
+
+
+-- Page 1 --
+[J] [J] [J
+Mobile Application
+[J]
+Development in the Al Era
+Moving from Syntax Memorization to System Architecture
+Week 10: Performance Cost and Reliabiility
+N
+Course Code: 1305216
+Credits: 3 (2-2-5)
+Prerequisites: Basic programming (any language),
+Basic understanding of Web / API concepts (recommended) By: Vittayasak Rujivorakul
+
+
+
+-- Page 2 --
+Communication Channel
+* Microsoft Teams: Streaming, Assignment
+If k 1 & MS.Team Code
+
+Chat with AI-TA
+* Communication @:F5@
+* FB Message: vittayasak rujivorakul ALTER
+* Email: vittayasak@mfu.ac.th rd ha
+@F:aiH
+
+
+
+-- Page 3 --
+Final Exam 28 Apr - 09 May 2025
+* 13-Mar-2026 Midterm Exam (Lab Test)
+* 20-Mar-2026 Privacy, PDPA & Personal Data
+* 27-Mar-2026 Performance, Cost & Reliability (Wk 10, 11)
+* 10-Apr-2026 Deployment & Application Distribution
+* 17-Apr-2026 Product Thinking & Continuous Improvement
+* 24-Apr-2026 Demo Day
+
+
+
+-- Page 4 --
+Performance, Cost & Reliability
+Optimizing for the Device, the Wallet, and the User
+Ce a»
+
+
+
+-- Page 5 --
+« . 1] ° =
+A “working” app can still be a failure.
+Your app is secure. It follows the law. It functions. But...
+y — »
+4 Beda)
+Cisse
+ma Cm
+e |[fitdrains 20% of a user’s battery in 10 minutes...
+e [fit stutters when you scroll...
+e [fit costs the company $5,000 in Firebase bills because of one bad loop...
+...itis a failure. Today, we move from “making it work” to “making it work well.”
+
+
+
+-- Page 6 --
+o
+Beware the Three Killers of Great Apps
+Every mobile application is stalked by three silent threats. They don’t care about your
+features or your elegant code. They exploit unseen flaws to destroy your user base and
+your budget. Understanding them is the first step to defeating them.
+The UX Killer The Wallet Killer The Silent Killer
+(Performance) (Cost) (Reliability)
+
+
+
+-- Page 7 --
+The UX Killer: Death by a Thousand Stutters
+60 FPS (Smooth) 15 FPS (Jank)
+Key Concept: The Frame Budget: @ ven @) vers
+Your app has exactly 16 milliseconds to @ ves (®) vers
+draw each frame to achieve a smooth ®ve
+60 FPS experience. If your code takes i
+17ms, the frame is dropped. The user @ ure [@/"]
+perceives this as “Jank” or lag. @ ver
+® User G
+Bi
+The user perceives ‘lag’ as ‘low quality’ and will uninstall.
+
+
+
+-- Page 8 --
+Main Cause #1: Main Thread Blocking Main Cause #2: Memory Bloat
+How the UX Never perform heavy calculations, Loading full-resolution 4K i
+° complex logic, or large JSON parsing into a 100x100 thumbnail slot is
+Ki ller Attacks on the main Ul thread. This freezesthe the of slow performance
+screen and guarantees you will miss and memory crashes. Cache and
+your : resize images appropriately.
+BEFORE: BAD PRACTICE AFTER: GOOD PRACTICE Q
+@override | ¥ :
+Widget build(BuildContext context) { void _runHeavyCalculation() async {
+// B BAD: Heavy work on UI thread! await compute(_heavyTask, 10000000);
+for (int i = 0; 1 < 10000000; i++) { }
+} iene ieee ieilatich Tt Future<void> _heavyTask(int count) async {
+i 5 E 2 for (int i = 0; i < count; i++) {
+5 return ListView.builder(...); cone ley Ea Es a
+i
+5
+
+
+
+-- Page 9 --
+The Wallet Killer: The Firebase Horror Story
+The Scenario: A junior developer put a database Cloud Cost Explosion
+read call inside a Ul drawing loop. Every time the
+screen refreshed, it re-read the entire database.
+The Math: a
+e 1,001 reads per screen open I
+e 10,000 daily active users o DANGER ZONE
+e 5 screen opens per user per day 3
+Result: 50,050,000 reads/day 3)
+Bad Code
+The Bill: At ~$0.06 per 100k reads, this single Deployed
+mistake cost the startup $30.03 per day, or nearly $0
+$900 per month. For a larger dataset, the bill was Dayl Day2 Day3
+$30,000. Time (Days)
+The Lesson: Cloud databases charge per read/write. Bad loops can bankrupt a company in weeks.
+
+
+
+-- Page 10 --
+.
+The Weapon of the Wallet Killer: The N+1 Query
+LEN J
+The ‘Bad Loop’: This code looks innocent, but it's a The Defenses
+irncinetent pee idiot | @) Pups roms
+8 P E Fetch the ‘Top 20’ and load more on scroll.
+// The Bad Loop: 1,001 reads for 1,000 users
+users. forEach(user => { (v] 2. **Compound Queries**: Refactor the
+fetchProfile(user.id); code to use a single, more complex query
+DE that fetches all the data in one request.
+© "Refactor this code to use a ‘Compound Query’ to fetch all data in a single
+request to minimize database reads."
+
+
+
+-- Page 11 --
+The Silent Killer: Draining Batteries and Crashing Silently
+Attack Vector #1: Battery & Network Drain Attack Vector #2: The Inevitable Crash
+e Radio Drain: Turning on the 4G/5G chip consumes e You can’t test every device. Your app *will* crash on
+massive power. It's better to download 100 items in a user's phone.
+one batch than 1 item 100 times. ® The User’s Reaction: 99% of users won't report a
+® Polling is Poison: Never write a loop that asks the crash. They just uninstall.
+server "Any new messages?” every second. Use Push
+Notifications or WebSockets. foes eeee——
+o The Physical Symptom: If your app makes the A
+phone hot, you are doing something wrong. App Reliability
+«4 Wake -> Download -> Sleep ————» Canra
+: —— 92% a broken app and
+Total Awake Time you don’t know why.
+1 batched | A <4—— Wake -> Download -> Sleep =
+request
+I Total Awake Time
+
+
+
+-- Page 12 --
+tG M
+.
+Your Arsenal: Don't Guess, Measure.
+ky oe = SE T—
+cody 2 CPU Usage: Spikes show
+where your code is working
+too hard.
+-— Hae Aes Memory Usage: **Memory
+= BE 4 y ve y Leak**- Memory climbs but
+qa 44 ZZ Ale Vall = never fully drops, indicating
+AS Sng - objects aren't being cleaned
+=e : up.
+p = - Ee ———— Network Activity: See every
+ne = : — — single request. Are you
+. = - Ss oe making too many?
+{2% The Tool Al Assistance
+The Profiler (Flutter DevTools, Android Profiler, You can paste a profiler log or stack trace into an Al
+Instruments). This is your weapon. It provides a and ask: “Why is my memory spiking here?” or
+real-time view of your app’s vital signs. “Explain the root cause of this crash.”
+
+
+
+-- Page 13 --
+The Training Ground: Week 10 Lab - The Performance Audit
+In today’s lab, you will stop being a builder and become an auditor. We are going
+to break things on purpose to learn how to identify and fix them.
+
+The Checklist: Hunt for the Killers
+
+g No The ‘Jank’ Test: Intentionally create a laggy list and
+iP F watch the frame rate drop.
+The ‘Bill Shock’ Simulation: Calculate the real-world
+a cost of a bad query.
+Memory Leak Hunting: Create a timer that doesn’t
+get cancelled and watch the memory climb.
+The Oversized Image Crime: Load a 50MB image into
+a list view and watch the app crash.
+
+
+
+-- Page 14 --
+Your First Task in the Lab:
+LJ
+np; nm Qe :
+The "Bill Shock" Simulation
+The Scenario The Cost Audit
+You have a "Users" collection and want to display Total Reads: 1 (for users list) + 1,000 (for each profile)
+their profiles. =1,001 reads every time the screen opens.
+The 'Bad' Code Firebase Pricing: ~$0.06 per 100,000 reads.
+DO NOT RUN THIS AGAINST A REAL LARGE DB. oie 10,000 users opening this screen 5 times
+This is the code that bankrupted a startup. a day...
+const users = await db.collection('users').get(); Calculation: (50,050,000 reads/day / 100,000) * $0.06
+users. forEach(user => {
+const profile = await Final Cost:
+db.collection('profiles').doc(user.id).get();
+// ... display profile
+BE $30.03 per day.
+The Lesson: In a real job, this mistake comes directly out of the company budget. Now, let's go find it.
+
+
+
+-- Page 15 --
+Lab Task: Recreate the Crime, Then Solve It
+Diagnostic Investigation Bad Practice A The Fix fe) |
+Step 1 (The Setup): Create a List 1 class MyListItem extends StatelessWidget 1 class MyListItem extends StatelessWidget
+View with 1,000 items. Intentionally { {
+add a heavy calculation or a 2 final int index; 2 final int index;
+‘print("Building Item $index")’ Ae mee all TR rR |
+statement inside the item builder. 5 override Key? key}) : super(key: key);
+This is a known bad practice. 6 Widget build(BuildContext context) { 5
+6 override
+A Ee 7 Widget build(BuildContext context) {
+5) Step 2(The Observation): Open the 8 return ListTile( | 8 // Bad print statement removed.
+profiler and scroll the list fast. 9 title: Text("Item $index"), 9 return ListTile(
+Watch the red bars appear. You've 10 ; 5) 10 : title: Text("Item $index"),
+x $5 § 1n H
+caught the culprit in the act. Fi Sil 7
+Gl : 13
+[] step 3 (The Fix): Remove the heavy | SR Ee |
+work and I/O operations. Use ‘const’ . "
+constructors (Flutter) or ‘React.memo’ A Bad Practice £& The Fix
+(React Native) to prevent
+unnecessary rebuilds. Observe the
+red bars disappear.
+
+
+
+-- Page 16 --
+case F12€7 Diagnostic Investigation
+. gi Ter] L]
+The Crime: The ‘Firebase Horror Story
++k peg ERR PT N
+The Suspect**: Monthly Cloud Bill S
+The N+1 Query. A simple loop that looks T
+innocent in development but generates $30,000
+millions of database reads in production.
+**From the Case Files**: ——————— =
+> I knew a startup that went bankrupt in a
+month because a junior dev put a ‘Read %
+Database’ call inside a UI drawing loop. The 8 5
+bill was $30,000. Do not be that intern.
+**Code Evidence**: — > (5
+( // The "Bad" Loop )
+| users. forEach { user ->
+| fetchProfile(user.id) // 1 read per user 0
+PE rn ee 0 y 10%
+| // Total: 1 (for users) +N (for profiles) = N+1 reads Time
+
+
+
+-- Page 17 --
+Diagnostic Investigation
+Lab Task: Audit the Cost of a Bad Loop
+The Scenario
+ro) You have 10,000 daily active users, each opening a screen with 1,000 items 5 times a day.
+[eat] IBM Plex Sans
+The Math
+1,001 reads/open x 5 opens/day x 10,000 users = 50,050,000 reads/day
+(50,050,000 / 100,000) x $0.06 (Firebase Pricing) = $30.03 per day
+= ~$900 per month
+The Fix (Consulting the Al Detective)
+"Refactor this code to use a 'Compound Query' or 'Table Join' to fetch all data in a
+single request to minimize database reads."
+
+
+
+-- Page 18 --
+Ll Ll Ll
+The Crime: The Ghost in the Machine
+The Investigation Notes
+* The Suspect: Unclosed listeners,
+timers, or streams. These are
+SD objects that stay in memory long F) =
+after they’re needed, slowly J py, Oe
+suffocating your app. g or
+* The Evidence: A “sawtooth” fa
+& pattern in the memory profiler 2g The Leak
+4a that trends upwards over time.
+This indicates the app never fully Time
+cleans up after itself.
+
+
+
+-- Page 19 --
+L
+Lab Task: Hunting the Leak
+class Pyscrem extends Statetokigpet
+Lr
+@ Step 1 (The Trap) © ans scree anes steams ¢
+Inascreen’s "initState’ or ‘useEffect’, add a "Timer' or Sse ¢
+‘StreamSubscription’ that prints “Tick” to the console SELL ror oes gan ®
+every second. Crucially, do not cancel it in the *dispose()" lan
+« soper.disposét); Q
+© The rest EE
+Navigate away from the screen and then back to it. RAR OEE
+Observe the console logs. Do you see ‘Tick... Tick..." For, THUD <- DOUBLE TICKING!
+running twice as fast? This is the evidence of the leak. [RHEE
+[00:86] Tick
+caps scare exes Steyr
+© TheFix Sieg,
+Implement the cleanup logic (timer. cancel()"). Sty ERS
+Verify the ‘double ticking’ stops, proving the ghost has Na
+been caught. SE []
+a
+
+
+
+-- Page 20 --
+eT
+(Case File #4)
+The Crime: The 4K Avatar
+irises 4 Memory Profiler Spike
+4MB download
+| | russe > 1
+4MB source image A CRASH!
+Ee The Suspect : Loading full-resolution, multi-megabyte images into tiny thumbnail slots. This is a
+£€, primary cause of out-of-memory crashes on older devices and wastes user data.
+2 The Evidence:
+==> A Network Profiler: Shows a 4MB image being downloaded for a 100x100 pixel view.
+A Memory Profiler: Shows a massive spike when the image is loaded, often followed by a crash.
+
+
+
+-- Page 21 --
+Lab Task: Put Your Images on a Diet
+Q © The Audit
+Review your app’s ‘Image.network’ URLs. Are you requesting the full-size original?
+Before
+©) TheFix (Strategy 1: CDN Parameters) Syn °
+Use a resizing service or a CDN parameter to
+request a smaller version. After
+.../profile.jpg?width=200 &
+3] The Fix (Strategy 2: Consulting the Al Detective)
+"I am displaying a list of user avatars. The source images are 4MB each.
+Suggest a strategy to optimize loading performance and cache usage in
+[Flutter/React Native]."
+
+
+
+-- Page 22 --
+Key Takeaways from the Investigation
+
+Question 1: The ‘16 ms Rule’ Question 2: The ‘Premature
+
+2 (ony Why is 16 milliseconds the OR ol rap
+
+© magic number for mobile om Why shouldn’t you optimize
+
+1 performance? = every line of code as you
+Ls 16.67ms E©) write it?
+(Answer: It's the time budget ad N
+for one frame at a 60Hz (Answer: It's an inefficient use
+screen refresh rate. of time. Focus on making code
+1000ms /60fps = 16.67ms. work correctly first. Then, use
+Exceeding this budget the profiler to find the *actual*
+results in a dropped frame, performance bottlenecks.
+or ‘jank.”) Don’t waste effort optimizing
+code that isn’t slow.)
+
+
+
+-- Page 23 --
+Ca Be d.
+Summary of Findings
+v Jank
+You've learned to use professional
+v CECE tools to identify and fix the four silent
+v Memory Leaks killers of mobile apps.
+Vv Bloated Images
+Your Deliverable
+Complete the Week 10 Lab Sheet, fix the identified issues in your project,
+and be prepared to discuss your findings and optimizations.
+Looking Ahead
+These skills are not optional. They are critical for building real-world
+applications that users love and businesses can afford to operate.
+

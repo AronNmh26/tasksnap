@@ -1,21 +1,23 @@
 // src/features/auth/store/useAuthStore.ts
 import { create } from "zustand";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInAnonymously,
   signOut,
+  sendPasswordResetEmail,
   updateProfile,
   onAuthStateChanged,
-  sendPasswordResetEmail,
   GoogleAuthProvider,
   FacebookAuthProvider,
   signInWithCredential,
   signInWithPopup,
+  deleteUser,
 } from "firebase/auth";
 import { auth } from "../../../services/firebase";
+import { secureGetItem, secureSetItem, secureRemoveItem } from "../../../services/secureStore";
+import { deleteAllTasksForUser } from "../../../services/db";
 
 export interface AuthUser {
   id: string;
@@ -38,8 +40,9 @@ interface AuthState {
   loginWithFacebook: (accessToken: string) => Promise<void>;
   loginWithFacebookPopup: () => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  requestPasswordResetEmail: (email: string) => Promise<string>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
   restoreSession: () => Promise<void>;
   clearError: () => void;
 }
@@ -85,7 +88,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       const mapped = mapFirebaseUser({ ...res.user, displayName: name.trim() || res.user.displayName });
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
 
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
@@ -103,7 +106,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await signInWithEmailAndPassword(auth, email.trim(), password);
 
       const mapped = mapFirebaseUser(res.user);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
 
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
@@ -115,14 +118,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  // ✅ Forgot password support
-  resetPassword: async (email) => {
+  requestPasswordResetEmail: async (email) => {
     set({ isLoading: true, error: null });
     try {
-      await sendPasswordResetEmail(auth, email.trim());
+      await sendPasswordResetEmail(auth, email.trim().toLowerCase());
       set({ isSessionChecked: true });
+      return "Password reset email sent. Please check your inbox and spam folder.";
     } catch (err: any) {
-      const message = err?.message ?? "Reset password failed";
+      const message = err?.message ?? "Failed to send password reset email";
       set({ error: message, isSessionChecked: true });
       throw err;
     } finally {
@@ -138,7 +141,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await signInWithCredential(auth, credential);
 
       const mapped = mapFirebaseUser(res.user);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
 
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
@@ -155,7 +158,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const res = await signInAnonymously(auth);
       const mapped = mapFirebaseUser(res.user);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
       const message = err?.message ?? "Guest login failed";
@@ -179,7 +182,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await signInWithPopup(auth, provider);
 
       const mapped = mapFirebaseUser(res.user);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
 
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
@@ -199,7 +202,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await signInWithCredential(auth, credential);
 
       const mapped = mapFirebaseUser(res.user);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
 
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
@@ -223,7 +226,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const res = await signInWithPopup(auth, provider);
 
       const mapped = mapFirebaseUser(res.user);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
+      await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
 
       set({ user: mapped, isSessionChecked: true });
     } catch (err: any) {
@@ -239,35 +242,77 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       await signOut(auth);
-      await AsyncStorage.removeItem(STORAGE_KEY);
+      await secureRemoveItem(STORAGE_KEY);
       set({ user: null, error: null });
     } finally {
       set({ isLoading: false, isSessionChecked: true });
     }
   },
 
-  // ✅ session restore (AsyncStorage + firebase state sync)
+  deleteAccount: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("You must be logged in to delete your account.");
+      }
+
+      // Delete user-owned data first
+      await deleteAllTasksForUser();
+
+      // Delete Firebase Auth user
+      await deleteUser(user);
+
+      await secureRemoveItem(STORAGE_KEY);
+      set({ user: null, error: null, isSessionChecked: true });
+    } catch (err: any) {
+      const code = err?.code as string | undefined;
+      if (code === "auth/requires-recent-login") {
+        const message = "Please log in again, then retry account deletion.";
+        set({ error: message, isSessionChecked: true });
+        throw new Error(message);
+      }
+      const message = err?.message ?? "Account deletion failed";
+      set({ error: message, isSessionChecked: true });
+      throw err;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  // ✅ session restore (SecureStore + firebase state sync)
   restoreSession: async () => {
     try {
       // 1) quick local restore (fast UI)
-      const sessionData = await AsyncStorage.getItem(STORAGE_KEY);
+      const sessionData = await secureGetItem(STORAGE_KEY);
       if (sessionData) {
         set({ user: JSON.parse(sessionData) as AuthUser });
       }
 
       // 2) sync with firebase (source of truth)
-      onAuthStateChanged(auth, async (u) => {
-        if (!u) {
-          await AsyncStorage.removeItem(STORAGE_KEY);
+      let isFirstCallback = true;
+      const unsubscribe = onAuthStateChanged(auth, async (u) => {
+        if (u) {
+          const mapped = mapFirebaseUser(u);
+          await secureSetItem(STORAGE_KEY, JSON.stringify(mapped));
+          set({ user: mapped, isSessionChecked: true });
+          console.log("[AuthStore] Firebase auth user restored:", u.uid);
+        } else if (isFirstCallback && sessionData) {
+          // First callback is null BUT we have a local session.
+          // Don't clear yet — Firebase Auth may still be initialising (e.g., restoring
+          // persistence on native). Just mark session as checked so the app doesn't block.
+          console.log("[AuthStore] First auth callback null, keeping local session");
+          set({ isSessionChecked: true });
+        } else {
+          // Genuinely signed out (or no local session existed)
+          console.log("[AuthStore] User signed out");
+          await secureRemoveItem(STORAGE_KEY);
           set({ user: null, isSessionChecked: true });
-          return;
         }
-
-        const mapped = mapFirebaseUser(u);
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
-        set({ user: mapped, isSessionChecked: true });
+        isFirstCallback = false;
       });
     } catch (err) {
+      console.error("[AuthStore] restoreSession error:", err);
       set({ isSessionChecked: true });
     }
   },

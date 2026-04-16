@@ -4,7 +4,8 @@ import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import RootNavigator from "./src/appRoot/navigation/RootNavigator";
 import { ThemeProvider } from "./src/core/theme/ThemeProvider";
 import { initDb } from "./src/services/db";
-import { configureNotifications } from "./src/services/notifications";
+import { initFirebaseAppCheck } from "./src/services/firebase";
+import { configureNotifications, isNotificationsAvailable } from "./src/services/notifications";
 import { useSettingsStore } from "./src/features/settings/store/useSettingsStore";
 
 class AppErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: string }> {
@@ -49,10 +50,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Initialize local DB + notifications + settings once
+    // Initialize App Check first, then local DB + notifications + settings.
+    initFirebaseAppCheck().catch(console.error);
     initDb().catch(console.error);
     loadSettings().catch(console.error);
-    if (Platform.OS !== "web") {
+    if (Platform.OS !== "web" && isNotificationsAvailable()) {
       configureNotifications().catch(console.error);
     }
   }, []);

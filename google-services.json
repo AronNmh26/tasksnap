@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "911003774738",
+    "project_id": "tasksnap-bdaa2",
+    "storage_bucket": "tasksnap-bdaa2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911003774738:android:83bf6d14bf936a3615cdcb",
+        "android_client_info": {
+          "package_name": "com.heinh.tasksnap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "911003774738-vjuoo73jf6d5o1h26c7rflf05mn2h36v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.heinh.tasksnap",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "911003774738-2u84b0mrdifshcj2h56vubqetntv26ig.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1yYPqvuY53Bvb6KJgYrIYQLfboqFKq6U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911003774738-2u84b0mrdifshcj2h56vubqetntv26ig.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "911003774738-i0vlvrh4gqp7of4ainja0t6svbi20uf0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.heinh.tasksnap"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

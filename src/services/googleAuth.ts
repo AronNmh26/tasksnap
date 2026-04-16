@@ -9,7 +9,10 @@
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
 import * as Crypto from "expo-crypto";
+
+WebBrowser.maybeCompleteAuthSession();
 
 // ──── OAuth Client IDs (Firebase → Authentication → Sign-in method → Google) ────
 // Web client ID is used for both web auth and as the "server" client ID for native.
@@ -22,6 +25,17 @@ const WEB_CLIENT_ID =
 // Android: "Android" type, package = com.tasksnap.app + your SHA-1
 const IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? "";
 const ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "";
+
+const FALLBACK_EXPO_OWNER = "aronmh26";
+const EXPO_OWNER =
+  process.env.EXPO_PUBLIC_EXPO_ACCOUNT ??
+  process.env.EXPO_PUBLIC_EXPO_OWNER ??
+  Constants.expoConfig?.owner ??
+  FALLBACK_EXPO_OWNER;
+const EXPO_SLUG = Constants.expoConfig?.slug ?? "tasksnap";
+const EXPO_PROJECT_FOR_PROXY =
+  process.env.EXPO_PUBLIC_EXPO_PROJECT_FOR_PROXY ??
+  (EXPO_OWNER ? `@${EXPO_OWNER}/${EXPO_SLUG}` : undefined);
 
 // ──── Detect Expo Go vs development build ──────────────────────────────────
 const isExpoGo = Constants.appOwnership === "expo";
@@ -69,6 +83,8 @@ const configureNativeGoogleSignIn = (): void => {
   mod.GoogleSignin.configure({
     webClientId: WEB_CLIENT_ID,
     iosClientId: Platform.OS === "ios" && IOS_CLIENT_ID ? IOS_CLIENT_ID : undefined,
+    androidClientId:
+      Platform.OS === "android" && ANDROID_CLIENT_ID ? ANDROID_CLIENT_ID : undefined,
     offlineAccess: false,
   });
 };
@@ -86,24 +102,9 @@ const nativeSignIn = async (): Promise<string> => {
   return idToken;
 };
 
-const nativeSignOut = async (): Promise<void> => {
-  const mod = getNativeModule();
-  if (!mod) return;
-  try {
-    await mod.GoogleSignin.signOut();
-  } catch {
-    // silent – user may already be signed out
-  }
-};
-
-// ──── Expo Go fallback: manual OAuth + PKCE via WebBrowser ─────────────────
-// expo-auth-session's Google provider constructs an invalid redirect URI in
-// Expo Go. This bypasses it entirely using the iOS/Android client ID with the
-// reversed-client-ID redirect scheme that Google auto-accepts.
-
-function reverseClientId(clientId: string): string {
-  return clientId.split(".").reverse().join(".");
-}
+// ──── Expo Go fallback: manual OAuth via WebBrowser ────────────────────────
+// Uses Expo's auth proxy redirect URL. This keeps Expo Go functional while
+// native builds use the Google Sign-In SDK.
 
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)
@@ -111,47 +112,36 @@ function bytesToHex(bytes: Uint8Array): string {
     .join("");
 }
 
-function base64ToBase64Url(b64: string): string {
-  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
 /**
  * Manual Google OAuth sign-in for Expo Go.
- * Uses the platform-specific (iOS/Android) client ID + PKCE.
+ * Uses the Web client ID + Expo auth proxy redirect URI.
  * Returns { idToken, accessToken } on success.
  */
-const expoGoSignIn = async (): Promise<{ idToken: string; accessToken: string }> => {
-  const clientId =
-    Platform.OS === "ios" ? IOS_CLIENT_ID : ANDROID_CLIENT_ID;
-  if (!clientId) {
-    throw new Error(
-      `Missing Google ${Platform.OS} client ID. Set EXPO_PUBLIC_GOOGLE_${Platform.OS === "ios" ? "IOS" : "ANDROID"}_CLIENT_ID in your .env file.`
-    );
+const expoGoSignIn = async (): Promise<{ idToken: string | null; accessToken: string | null }> => {
+  if (!WEB_CLIENT_ID) {
+    throw new Error("Missing Google Web client ID. Set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID in your .env file.");
   }
 
-  const redirectUri = `${reverseClientId(clientId)}:/oauthredirect`;
-
-  // ── PKCE ───────────────────────────────────────────────────────────────
-  const verifierBytes = Crypto.getRandomBytes(32);
-  const codeVerifier = bytesToHex(verifierBytes); // 64-char hex string
-
-  const challengeB64 = await Crypto.digestStringAsync(
-    Crypto.CryptoDigestAlgorithm.SHA256,
-    codeVerifier,
-    { encoding: Crypto.CryptoEncoding.BASE64 }
-  );
-  const codeChallenge = base64ToBase64Url(challengeB64);
+  const redirectUri = EXPO_PROJECT_FOR_PROXY
+    ? `https://auth.expo.io/${EXPO_PROJECT_FOR_PROXY}`
+    : `https://auth.expo.io/@${FALLBACK_EXPO_OWNER}/${EXPO_SLUG}`;
+  if (redirectUri.startsWith("exp://")) {
+    console.warn(
+      "[googleAuth] Expo auth proxy not detected. Set EXPO_PUBLIC_EXPO_ACCOUNT to your Expo username."
+    );
+  }
   const state = bytesToHex(Crypto.getRandomBytes(16));
+  const nonce = bytesToHex(Crypto.getRandomBytes(16));
 
   // ── Build authorization URL ────────────────────────────────────────────
   const params = new URLSearchParams({
-    client_id: clientId,
+    client_id: WEB_CLIENT_ID,
     redirect_uri: redirectUri,
-    response_type: "code",
+    response_type: "token id_token",
     scope: "openid email profile",
     state,
-    code_challenge: codeChallenge,
-    code_challenge_method: "S256",
+    nonce,
+    prompt: "select_account",
   });
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 
@@ -162,50 +152,27 @@ const expoGoSignIn = async (): Promise<{ idToken: string; accessToken: string }>
     throw new Error("Google sign-in was cancelled.");
   }
 
-  // Parse code & state from redirect URL query string
+  // Parse tokens from redirect URL fragment (#access_token=...&id_token=...&...)
   const returnedUrl: string = (result as any).url;
-  const qs = returnedUrl.includes("?") ? returnedUrl.split("?")[1] : "";
-  const responseParams = new URLSearchParams(qs);
+  const fragment = returnedUrl.includes("#") ? returnedUrl.split("#")[1] : "";
+  const fragmentParams = new URLSearchParams(fragment);
 
-  const code = responseParams.get("code");
-  const returnedState = responseParams.get("state");
+  const accessToken = fragmentParams.get("access_token");
+  const idToken = fragmentParams.get("id_token");
+  const returnedState = fragmentParams.get("state");
 
   if (returnedState !== state) throw new Error("OAuth state mismatch.");
-  if (!code) throw new Error("No authorization code returned by Google.");
-
-  // ── Exchange code for tokens ───────────────────────────────────────────
-  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      client_id: clientId,
-      code,
-      code_verifier: codeVerifier,
-      grant_type: "authorization_code",
-      redirect_uri: redirectUri,
-    }).toString(),
-  });
-
-  const tokens = await tokenRes.json();
-
-  if (tokens.error) {
-    throw new Error(tokens.error_description || tokens.error);
-  }
-  if (!tokens.id_token) {
-    throw new Error("Token exchange succeeded but no id_token was returned.");
+  if (!accessToken && !idToken) {
+    throw new Error("No access token or id token returned by Google.");
   }
 
-  return { idToken: tokens.id_token, accessToken: tokens.access_token ?? "" };
+  return { idToken: idToken ?? null, accessToken: accessToken ?? null };
 };
 
 export {
-  WEB_CLIENT_ID,
-  IOS_CLIENT_ID,
-  ANDROID_CLIENT_ID,
   isExpoGo,
   configureNativeGoogleSignIn,
   nativeSignIn,
-  nativeSignOut,
   isNativeGoogleAvailable,
   expoGoSignIn,
 };

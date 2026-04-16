@@ -1,0 +1,460 @@
+
+
+-- Page 1 --
+[J [J] [J
+Mobile Application
+[J]
+Development in the Al Era
+Moving from Syntax Memorization to System Architecture
+Week 13: Product Thinking and Continuous Inprovement
+\
+Course Code: 1305216
+Credits: 3 (2-2-5)
+Prerequisites: Basic programming (any language),
+Basic understanding of Web / API concepts (recommended) By: Vittayasak Rujivorakul
+
+
+
+-- Page 2 --
+Communication Channel
+* Microsoft Teams: Streaming, Assignment
+If k 1 & MS.Team Code
+
+Chat with AI-TA
+* Communication @:F5@
+* FB Message: vittayasak rujivorakul ALTER
+* Email: vittayasak@mfu.ac.th rd ha
+@F:aiH
+
+
+
+-- Page 3 --
+Final Exam 28 Apr - 09 May 2025
+* 13-Mar-2026 Midterm Exam (Lab Test)
+* 20-Mar-2026 Privacy, PDPA & Personal Data
+* 27-Mar-2026 Performance, Cost & Reliability
+* 27-Mar-2026 Testing & Quality Assurance
+* 3-Apr-2026 Deployment & Application Distribution
+* 17-Apr-2026 Demo Day #1
+* 24-Apr-2026 Demo Day #2
+
+
+
+-- Page 4 --
+Product Thinking & Continuous Improvement
+From Code Complete to Customer Value
+
+
+
+-- Page 5 --
+You Made It. "8% >
+a = - = at} RL
+You have built, tested, and signed... = EEESNR E ’
+a functional mobile application. The ¢ iy.
+q ~The - 7
+code compiles. The features work. — 2 |
+; nll - nl, A
+) fr .
+E 1 iy - ¥
+7 , TE
+- a =
+h BPN
+: or \ ar
+g  §! CRE TC | gee i
+
+
+
+-- Page 6 --
+Shipping Isn't the End. It's the Beginning.
+Professional software isn’t a project with an end date; it’s a living product that evolves.
+Your job now shifts from pure creation to a continuous cycle of improvement.
+BUILD ¢ Build: Create an idea
+(your MVP). You did this in
+Weeks 1-12.
+
+* Measure: Collect real-
+world data about what
+users are actually doing.
+
+e Learn: Generate insights
+from that data to inform
+
+NY the next idea.
+-0- LEARN MEASURE [5d
+
+
+
+-- Page 7 --
+Measure What Matters
+Your first task is to turn user actions into data. But not all data is created equal.
+Vanity Metrics (Feel Good) Actionable Metrics (Drive Decisions)
+£ 17] @ a
+Total Downloads ~ Sl
+3 = User Retention
+Son [€] 40%
+®
+30%
+20% Week 4 Retention: 15% )
+10%
+/ 8 : Week 1 Week? Week3 Week 4
+* Total Downloads « Daily Active Users (DAU): Is anyone coming back?
+* Sign-ups * Retention Rate: Are they still here next week?
+* Funnel Conversion: Where do they get stuck and drop off?
+
+
+
+-- Page 8 --
+Listen to the Silence
+99% of users who experience a crash don't send you an email. They just
+uninstall the app. Crash reporting is your "black box recorder" for finding out
+what went wrong, where, and why.
+**Your Action Loop** cmc :
+1. Monitor: Watch for spikes after a new — = =
+release. Vu =
+2. Prioritize: Fix the bug affecting 1,000 = ee
+users before the one affecting ; 3 user. ce do] engi java.lang.NullPointerException
+3. Al-Assist: Paste the stack trace into an AI ovine Re
+and ask, 'What is the likely root cause of SET SR TT
+this crash?’ : :
+
+
+
+-- Page 9 --
+Data Tells You What. People Tell You Why.
+Quantitative Qualitative
+hidden by the keyboard.”
+Insight “I didn’t trust the site with
+Go to Payment (75%) my credit card info.”
+(70%) :
+“It didn’t support my local
+payment method.”
+Complete (5%)
+
+
+
+-- Page 10 --
+- E.* p~
+. / = The Most Valuable
+- 5 Minutes
+- 9 3 n Wh Se / i Today's lab is simple but powerful. You
+“4 od will give your app to a classmate and
+2 , watch them use it.
+The Rules:
+1. Give them a simple task (e.g., “Sign
+) , up and post a photo”).
+a 2. Youare from speaking. No
+hints. No excuses.
+Fa 3. Watch their thumbs. Where do they
+hesitate? What do they tap by mistake?
+This is not a test of the user. It is a test of your design.
+
+
+
+-- Page 11 --
+The AI Ceiling
+Lo Initial Scaffoldin
+In the beginning, Al accelerated your g
+development. As your app grows and
+becomes more complex, you will hit a wall.
+a
+Ki 9) The Maintainability Crisis =
+—“Z  Alloses context across multiple files. s
+ar A change in one place might break @
+another, and the AT won't know. =
+<C
+The Context Window Limit 50+ Files
+$s DD: An Al can't hold a 50-file project in its Evolving
+“mind.” It starts hallucinating functions Features
+and forgetting your architecture.
+Your Role as Engineer
+Eventually, you must understand the system
+deeply because the Al cannot solve the fi 0
+complex, architectural bugs it helped create. Project Complexity
+
+
+
+-- Page 12 --
+’ o .
+You Can't Fix Everything
+Your user testing will generate a list of bugs and desired features.
+With one week until Demo Day, you must prioritize ruthlessly.
+
+PO (Critical Bug) P1 (Major Issue) P2 (Minor Polish)
+The app crashes; the user The user was confused or A typo, a misaligned icon, a
+cannot complete the core slowed down but eventually ‘nice-to-have' idea.
+
+task. succeeded.
+
+
+
+-- Page 13 --
+Automating the Loop
+How do you release improvements quickly
+and safely? You automate. Continuous
+Integration / Continuous Delivery (CI/CD) z=
+is the engine that drives the Build- Flan Code
+Measure-Learn loop.
+
+a a Ns)
+Code Commit -> Triggers... Monitor Release Build
+Automated Tests (Wk 11) > Run to =—
+check for regressions.
+Automated Build (Wk 12) -> Creates a Deploy Test
+signed release.
+Automated Deploy - Pushes to internal
+testers or the app store.
+
+
+
+-- Page 14 --
+Your Final Presentation is a Product Pitch
+Next week is not just a code review. You are pitching a product.
+The insights from today's lab are your secret weapon.
+Checklist for Demo Day
+XK Fix Your PO Bugs: A crashing demo is an automatic fail.
+Hr Rehearse the ‘Happy Path’: Know the exact sequence of taps to
+[Sle show your app’s core value. Use a demo account with perfect,
+pre-populated data.
+Prepare Your ‘Why’: Start your pitch by explaining the problem
+your app solves (from Week 1), not the technology you used.
+
+
+
+-- Page 15 --
+From Coder to Product Engineer
+A Success is not ‘It Compiles.’ Success is retention, user
+engagement, and a crash-free experience.
+Data is Your Compass, Users are Your Guide. Use
+(7; analytics to see what’s happening and user feedback to
+Q understand why.
+Al is a Tool, Not the Architect. Your most valuable skill is
+the ability to audit, improve, and take responsibility for the
+0 final product, especially when the AI hits its limits.
+
+
+
+-- Page 16 --
+Today's Lab: The ‘Silent Stranger’ Test
+1 Partner Up:
+
+e Find a classmate who has not seen your app before.
+2 Swap Phones & Assign a Task:
+
+e e.g. ‘Sign up and add an item to your cart.’
+3 Observe in Silence (5-10 min):
+
+e Take detailed notes on where they struggle. Remember the Rule of
+
+Silence: you are forbidden from speaking.
+
+4 Triage Your Findings:
+
+e Use the PO/P1/P2 system to create an action plan for your final week.
+5 Reflect:
+
+e What ‘obvious’ part of your UI was actually confusing?
+
+
+
+-- Page 17 --
+: 0]
+
+Week 13: : =
+
+User Acceptance TE
+Testing & Reflection
+From Developer to Product Owner
+
+
+
+-- Page 18 --
+Your Mission: Validate the Experience
+Your app is built. It's a functional prototype. But is it usable? Today, you step out of the
+code and into the user's shoes. Your mission is to gather honest, unfiltered feedback and
+create a data-driven plan to polish your app for Demo Day.
+KEY GOALS
+7 Conduct Live UAT: bo? [*:)=*] Triage Feedback:
+>= Uncover usability flaws Prioritize what to fix with
+= through direct CJ) limited time.
+observation. =
+JUL Reflecton Al: Analyze Prepare to Pitch: Craft
+=m] the long-term impact of ya the story for your final
+your Al development presentation.
+0 © partner.
+
+
+
+-- Page 19 --
+The First Rule of UAT
+[{§ :
+You cannot fix the user.
+- n
+You can only fix the app.
+For the next 15 minutes, you are forbidden from helping,
+explaining, or guiding your tester. Your only job is to watch,
+—— listen, and take notes. Embrace the uncomfortable silence;
+by it's where the most valuable insights are found.
+
+
+
+-- Page 20 --
+5 [TH ’
+Part 1: The ‘Silent Stranger’ Test
+Setup & Methodology
+oO 1. Partner Up: Find a classmate who
+Mal has not seen your app before.
+94 2. Hand Off the Device: Give them
+= your phone with the app running.
+*Y f
+3. State the Tasks: Clearly give them
+their three missions (see next slide).
+4. Enforce the Rule of Silence: Do not
+< speak again until the test is over.
+
+
+
+-- Page 21 --
+Part 1: User Tasks
+Assign these three missions to your tester.
+N 3 7°
+y/4 /, N 7)
+( /7
+1. Onboarding & 2. Core Value Action 3. Edge Case Action
+Authentication (Define the single most e.g., "Edit your profile,” "Delete
+Create a new account and important action in your app.) an item,” or "Search for
+log in. something that doesn't exist.”
+e.g., "Post a photo,” "Add an
+item to the cart,” or “Book a
+meeting.”
+
+
+
+-- Page 22 --
+Part 1: Your Role as Observer
+Log every point of friction. Your notes are your data.
+. Expectation (What did you think
+Task# Observation (What happened?) would happen?)
+1 Tester stared at the home screen for They would instantly see and tap the
+) 10s, unable to find “Login”. “Login” button.
+2 Tapped on the company logo, They would use the bottom navigation
+) expecting it to go to the home page. bar.
+3 App crashed when they tried to upload = An error message would appear:
+: a photo without a title. “Please add a title".
+Look for hesitation, wrong taps, confusion, or expressions of frustration. Every time they ask
+“What do | do now?"—even silently—is a bug in your design.
+
+
+
+-- Page 23 --
+Part 2: The Bug Triage
+From Observation to Action. You have one week. You can't fix everything.
+Review your observation log. Classify each issue using a professional prioritization
+framework.
+[J
+PO (Critical) P1 (Major) P2 (Minor)
+App crashes, blocks Causes confusion, Typos, cosmetic issues,
+core tasks. slows the user down, ‘nice-to-haves.
+but they succeed
+Action: MUST FIX FOR eventually. Action: ADD TO
+DEMO BACKLOG (IGNORE
+Action: FIX IF TIME FORNOW)
+ALLOWS
+
+
+
+-- Page 24 --
+Part 2: Your Pre-Demo Action Plan
+
+Identify the Top 3 (PO/P1) issues you will commit to fixing before Demo Day.
+
+1.
+
+LE FT IE 1 War s—
+5
+
+IS SU as cae a a re A A en NI a a es)
+3
+
+[VR rr lotr bi reo A a it El Ae Oley totes oll | elton
+
+
+
+-- Page 25 --
+Part 3: The Al Post-Mortem
+
+Be honest about the code you've inherited from your Al partner.
+
+The app is built, but long-term maintainability is a key engineering concern. Identify the
+hidden risks in your Al-generated code.
+
+oes
+
+Sx
+
+1. The 'Ghost in the Machine’ 2. The Maintenance Cost
+
+What single piece of Al-generated code are If you had to support this app for 5 years,
+you afraid to touch because you don't fully which Al-generated feature would be the
+understand it? (e.g., complex state logic, a first to break or become a technical debt
+regex pattern, state management spaghetti). nightmare?
+
+
+
+-- Page 26 --
+Part 4: Scripting Your Success
+Next week is a sales pitch, not a code review.
+How you present your app matters as much as the app itself. Use your UAT insights to
+refine your story.
+The Hook
+Craft the first sentence of your presentation. It must state the Problem, not the technology.
+Bad: Good:
+ed i “Every day, 50% of students
+! ie eka Epp forget their homework. Our
+Firebase... N
+app solves this by..."
+
+
+
+-- Page 27 --
+Part 4: The Final Polish
+Stage the perfect demo. Don't let bad data ruin a great app.
+Eo O Perfect Demo Account: Is your demo account populated with realistic,
+compelling data? No ‘asdf or 'test' entries.
+O Polished Profile: Does the profile picture load correctly? Is the bio
+well-written?
+
+— O Populated Lists: Are ‘Recent Items’ or 'Feed' lists full and visually appealing?
+Pop— (Pre-load this data!)
+
+( O Clean State: Have you reset the app to its ideal starting state before the demo?
+
+
+
+-- Page 28 --
+Lab Complete
+Consolidate your findings.
+DELIVERABLE:
+» Complete the Week 13 Lab Sheet with your findings from today's session:
++ [F UAT Observation Log
+« $= Triage & Action Plan
+« (A) Al Post-Mortem Reflection
+« [2] Demo Day Hook
+— NEXT STEP: Begin implementing your PO/P1 fixes. Prepare for Demo Day.
+
+
+
+-- Page 29 --
+y- 2 ea 1 4 -
+x ® x = Ly A a } { . ; . i { / Esl v Fa Te VY A a NS
+"Mobile Application Develo pment in the Al Era
+Nd SNE a ay i } > Pr Ves
+AN 4 nN AY TEER pi A We
+\ 3 A ATR = ] z ia HA Za
+n FEL | EN i lh ’ pV 7 Ay 22
+i : No = fo al eZ is yz ds  £ 5o= =
+NG Fir WT TRY | § TN 2s 7 -
+NA i, wil 0 : 1% is ri ,
+AN +f . 4 Be 5 ay aR UR = 2 ¥ bo / / - “ Ts i
+VER, os Sa yy SL gran “al ex / Eo
+~ or Tg ‘o 7 | TAL = oh S ¥ ng 3 TE EN 2 7 XC» 296
+

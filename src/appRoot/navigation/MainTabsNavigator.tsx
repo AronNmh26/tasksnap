@@ -5,7 +5,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 import DashboardScreen from "../../features/tasks/screens/DashboardScreen";
 import ReviewScreen from "../../features/tasks/screens/ReviewScreen";
-import QuickCaptureScreen from "../../features/tasks/screens/QuickCaptureScreen";
 import CameraCaptureScreen from "../../features/camera/screens/CameraCaptureScreen";
 import SettingsScreen from "../../features/settings/screens/SettingsScreen";
 import ProfileScreen from "../../features/home/screens/ProfileScreen";
@@ -24,6 +23,14 @@ export type MainTabsParamList = {
 
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
+const TAB_ICONS: Record<keyof MainTabsParamList, React.ComponentProps<typeof MaterialIcons>["name"]> = {
+  [RouteNames.Dashboard]: "dashboard",
+  [RouteNames.Review]: "checklist",
+  [RouteNames.QuickCapture]: "add-circle",
+  [RouteNames.Settings]: "tune",
+  [RouteNames.Profile]: "account-circle",
+};
+
 export default function MainTabsNavigator() {
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -31,20 +38,8 @@ export default function MainTabsNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: any = "home";
-
-          if (route.name === RouteNames.Dashboard) {
-            iconName = focused ? "dashboard" : "dashboard";
-          } else if (route.name === RouteNames.Review) {
-            iconName = focused ? "checklist" : "checklist";
-          } else if (route.name === RouteNames.QuickCapture) {
-            iconName = "add-circle";
-          } else if (route.name === RouteNames.Settings) {
-            iconName = focused ? "tune" : "tune";
-          } else if (route.name === RouteNames.Profile) {
-            iconName = focused ? "account-circle" : "account-circle";
-          }
+        tabBarIcon: ({ color, size }) => {
+          const iconName = TAB_ICONS[route.name as keyof MainTabsParamList];
 
           return <MaterialIcons name={iconName} size={size} color={color} />;
         },

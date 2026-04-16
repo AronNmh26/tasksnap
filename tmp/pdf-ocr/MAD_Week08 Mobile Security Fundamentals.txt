@@ -1,0 +1,579 @@
+
+
+-- Page 1 --
+[J] [J] [J
+
+Mobile Application
+[J]
+
+Development in the Al Era
+Moving from Syntax Memorization to System Architecture
+Week 08: Mobile Security Fundamentals
+N
+Course Code: 1305216
+Credits: 3 (2-2-5)
+Prerequisites: Basic programming (any language),
+Basic understanding of Web / API concepts (recommended) By: Vittayasak Rujivorakul
+
+
+
+-- Page 2 --
+Communication Channel
+* Microsoft Teams: Streaming, Assignment
+If k 1 & MS.Team Code
+
+Chat with AI-TA
+* Communication @:F5@
+* FB Message: vittayasak rujivorakul ALTER
+* Email: vittayasak@mfu.ac.th rd ha
+@F:aiH
+
+
+
+-- Page 3 --
+Final Exam 28 Apr - 09 May 2025
+* 13-Mar-2026 Midterm Exam (Lab Test)
+* 27-Mar-2026 Performance, Cost & Reliability
+* 03-Apr-2026 Testing & Quality Assurance
+* 10-Apr-2026 Deployment & Application Distribution
+* 17-Apr-2026 Product Thinking & Continuous Improvement
+* 24-Apr-2026 Demo Day
+Makeup Class
+* Week 07 Code Review Debugging & Refactoring
+* Week 08 Mobile Security Fundamental ;
+
+
+
+-- Page 4 --
+Mobile Security Fundamentals
+Protecting Users, Data, and Your Reputation
+_  —
+“Welcome to Phase 3. Up until now, if your app crashed, it was just annoying. From
+today on, if your app fails, you could be sued, fined, or fired.”
+
+
+
+-- Page 5 --
+Your First Principle: The Client is Compromised
+Vo A
+p _
+NN — ThE -
+2 The Uncomfortable Truth: You do not control the hardware or the operating system. The user does, and they
+mn might be a malicious actor.
+52 Reverse Engineering is Trivial: Any compiled app (like an Android APK) can be ‘unzipped’ and its contents examined.
+BE The Consequence: Anything you store in plain text within your app’s code is public knowledge. This includes
+=/\ API keys, secret strings, and business logic.
+“You think ‘private String secretKey’ means it’s safe? It’s not. I can decompile your
+APK in 30 seconds and read that key. Never store secrets on the client.”
+
+
+
+-- Page 6 --
+J [] ’ H
+The Hacker's ‘Most Wanted’ List
+The Open Web Application Security Project (OWASP) tracks the most common ways mobile apps
+are hacked. We will focus on the sins most often committed by AI code generators.
+‘WANTED ‘WANTED ‘WANTED
+\ » \ |
+WANTED! WANTED) WANTED
+M2: Insecure Data Storage | M3: Insecure Communication M1: Improper Platform Usage
+EY [1 | 9
+or” oa Fa «QO
+I Ve | Ei
+| Ni y. ? | | | y : (
+| (4 4 | NY a 4 —
+| = | py? =
+= — | | | ft = = [id
+JE 8 | ee waa vs
+| CRIME: | CRIME: | CRIME:
+| Saving passwords, tokens, or Using HTTP instead of HTTPS, or Misusing platform features like
+personal data in plain text files blindly trusting any SSL | Android Intents or the iOS
+(like SharedPreferences or certificate, allowing attackers to Keychain, leading to unintended
+UserDefaults). read network traffic. data exposure.
+
+
+
+-- Page 7 --
+The Unwitting Accomplice: Your Al Assistant
+@F » )
+= pon
+2 G2
+Your Al coding assistant is like a dangerously helpful junior developer. It has one priority: make
+the code work. It does not prioritize security.
+It loves taking shortcuts to get a feature running.
+Q) It has security blind spots and will often suggest the easiest, least secure solution first.
+@& Tt will happily hardcode your secret keys if you paste them into the chat.
+You are the Senior Engineer. It is your job to review the junior
+dev's code and catch these critical mistakes.
+
+
+
+-- Page 8 --
+f . . .
+Al's Default Sin: Storing Secrets on a Sticky Note
+H 1] SR
+Pa lel 2 c I
+P| AACN TT
+| ) i —
+\ cid s/f
+oo aN |
+“SharedPreferences’ / *AsyncStorage’ - Insecure, plain text. ‘SecureStorage’ / "Keychain® - Secure, hardware-encrypted.
+Al usually suggests the easiest method (‘SharedPreferences’). ‘You must demand the secure method (‘flutter_secure_storage’ or
+This is a plain text file anyone with root access can read. “Expo SecureStore'). It uses the phone's hardware encryption chip.
+“If 1 ask where you stored the user’s Auth Token and you say ‘Local Storage,’ you fail this week.”
+
+
+
+-- Page 9 --
+The Coffee Shop Attack: How Al Disables Your Security
+x [F—r9) When your user is on public WiFi (airport, coffee
+0; [O=1="A shop), an attacker on the same network can read all
+B [0o—1 A) unencrypted traffic.
+fs : =
+= : The Rule: HTTPS is non-negotiable. It encrypts the
+You (« 0) Your Bank data in transit.
+5, % Cc) The AI Security Trap: If you have a connection error
+— Roiiter due to a misconfigured server, Al might suggest a
+Eel A "fix" that bypasses SSL certificate validation.
+* =) ¢ AI Suggestion: “Just add this line to ignore SSL
+Unencrypted ~~ : errors."
+HTTP traffic RE /N The Reality: This is like firing your security guard
+/ because you lost your keycard. It opens the door
+\ / for a Man-in-the-Middle attack, where a hacker
+Data Intercepted liar] pretends to be your server.
+Hacker NEVER accept code that disables security checks.
+
+
+
+-- Page 10 --
+The #1 Rule: Never Hardcode Your Secrets
+Bots are constantly scanning GitHub for committed API keys. If you commit a secret, it will be
+found within seconds. Al will happily include secrets in code if you provide them.
+Insecure Al-Generated (KFAIL Secure Professional (ZPASS)
+Pattern (FAIL) Code (PASS)
+// UserService.js // .env file (add this file to .gitignore)
+APL AEY="pk_Live_123abctcet...
+http.get('api.service.com’, {
+headers: {'Authorization': ‘Bearer ${apikKey}'} }); // UserService.js
+b; import dotenv from 'dotenv';
+const apikey = dotenv.config().APL_KEY; // Loaded from environner
+Sho secrets exposed in plain text. | http.get('api.service.com', {
+headers: {'Authorization': ‘Bearer ${apiKey}'} });
+DH
+The secret is loaded securely from the environment.
+Source Serif Pro
+
+
+
+-- Page 11 --
+The Professional's Playbook: Three Pillars of Defense
+To defend your app and your users, focus your efforts on three key areas. We will use
+this framework to audit our code.
+© (=
+1
+1. Secure Communication 2. Secure Storage 3. Secure Code
+(Data in Transit) (Data at Rest) (Secrets & Integrity)
+Goal: Protect data as it travels Goal: Protect data saved on Goal: Protect secrets and
+across the network. the user’s device. logic embedded within the
+app itself.
+
+
+
+-- Page 12 --
+Pillar 1: Secure Communication
+Always use HTTPS: There are no exceptions for production
+» applications. Modern OS versions often block HTTP traffic by
+default.
+Validate SSL Certificates: Do not accept Al suggestions to bypass
+» certificate checks. Fix the server configuration instead. VAN
+Advanced Technique: Certificate Pinning: For high-security apps
+(like banking), this technique ensures your app only
+communicates with your specific, pre-approved server certificate, @
+preventing sophisticated impersonation attacks.
+
+
+
+-- Page 13 --
+1 eo
+Pillar 2: Secure Storage
+Use the Right Tool for the Job:
+o For non-sensitive data (e.g., ‘Dark Mode’ setting): SharedPreferences /
+AsyncStorage is acceptable.
+o For sensitive data (Auth Tokens, PII, passwords): You must use encrypted storage.
+The Libraries to Use:
+o Flutter: flutter_secure_storage
+o React Native / Expo: expo-secure-store or react-native-keychain
+» The Mechanism: These libraries utilize the device's dedicated hardware security
+module (Keychain on iOS, Keystore on Android).
+
+
+
+-- Page 14 --
+yo Pillar 3: Secure Code & Secrets
+
+¢ Zero Hardcoded Secrets: No API keys, no
+encryption salts, no back-door passwords. Nothing.
+
+¢ Use Environment Variables: The industry standard Gam
+is a .env file for local development and platform-
+specific secret management tools (like GitHub
+Actions Secrets) for CI/CD.
+
+A * Always .gitignore Your Secrets: The first thing you
+
+do after creating a .env file is add it to .gitignore.
+Check your remote repository to ensure it was never
+committed.
+
+
+
+-- Page 15 --
+. , .
+This Isn't Academic: Real-World Breaches
+ERE — 50M Ride-Sharing App Leaks Driver Data After, M, b
+
+woos = aa Xposes ramp to OX Obile Bap: |
+Social Media Giant E503 Exposed [=== Commits Secret to GitHub Allows Unaking App Va
+
+User Records Via ous wm ACCesg  2Uthorizeq Acq 2bility
+
+Ke = a. Tech news unt
+APAYEY en — Ride-Sharing App Leaks Driver Data on
+After Developer Commits Secret to a
+GitHub Viobij Sas
+
+3 pile Bankin App Intric Arse th Ulner ypmk ing App Try
+
+Mobile ba ive-waice to Com Beaders App! AVenit Y Allow, un
+
+approvabilte active-Wt oud erry Acct Acces S
+
+Tris tamu le OP Media Security App fees I—
+Many of the largest data breaches in history were not caused by sophisticated zero-day exploits, but by
+simple, preventable mistakes like the ones we've just discussed.
+
+® An API key for a major ride-sharing company was found hardcoded in their source code on GitHub.
+
+e A social media giant exposed user data through an insecure S3 bucket because of a misconfigured,
+
+publicly-visible key.
+How could these multi-billion dollar failures have been prevented during the
+Architecture phase, before a single line of insecure code was written?
+
+
+
+-- Page 16 --
+B t . ’ H
+
+Your Turn: The ‘White Hat’ Audit
+For today’s lab, we are not builders; we are breakers. You will become a security auditor for your
+own application. Your mission is to find and fix the vulnerabilities that you (and your AI assistant)
+have likely created.
+Your Audit Toolkit
+The 'Grep' Audit: We will use The Storage Inspection: We will The Al Vulnerability Scan: We
+search tools to hunt for keywords identify exactly where your auth will ask the Al to find the security
+like “api_key’, ‘password’, and token is being stored. holes in its own code.
+“http:'.
+
+
+
+-- Page 17 --
+Lab Mission Briefing
+Q Find Hardcoded Harden Data Make the Al Your
+Secrets tJ Storage (22) Auditor
+Run a global search in your Audit your AuthService or Paste a service or component
+codebase. login logic. file into your AI chat.
+Are you using “Act as a Senior Security
+SharedPreferences for the Researcher. Audit this code
+user’s token? for OWASP Mobile Top 10
+Create a .env file, move the risks, data leakage in logs,
+secret, and add .env to your Refactor to use logs, and weak error
+.gitignore. flutter_secure_storage or handling”
+expo-secure-store.
+Did the Al find its own
+mistakes?
+
+
+
+-- Page 18 --
+From Coder to Professional Engineer
+“The code you write has real-world consequences.
+It can protect someone’s privacy or expose it.
+
+It can build trust or destroy a company’s reputation.
+Your job is not just to make things work; it is to make
+them work safely.
+
+This is what it means to be a professional.
+
+
+
+-- Page 19 --
+Week 8 Lab: The White Hat's Audit
+A Hands-On Mission to Secure and Harden Al-Generated Code
+Mobile Application Development | Phase 3: Real-World Quality & Responsibility
+
+
+
+-- Page 20 --
+Your Mission Briefing: The Al Security Blind Spot
+You've used Al to build applications with incredible speed. This is Phase 2 thinking. Now, in Phase 3, we
+address the consequences. Al-generated code prioritizes functionality over security. It often creates
+applications that ‘work’ but are dangerously insecure by default.
+[Al Tool] [Fast Code Generation] [Hidden Vulnerabilities?]
+e The Al Goal: Generate working code as fast as possible.
+e The Hidden Cost: Security vulnerabilities, data leaks, and hardcoded secrets.
+e Your New Role: To move from ‘Creator’ to ‘Auditor.’ You are responsible for every line of code
+code the Al writes. As per the syllabus, you must learn to ‘review, debug, and refactor Al-
+generated code responsibly.”
+
+
+
+-- Page 21 --
+The First Principle of Mobile Security: The Client is Compromised
+The most critical concept to understand is that you do not control the user's device. A determined
+attacker has physical access to the phone and can use tools to inspect, decompile, and reverse-
+engineer your application.
+A Decompilation \
+COE |e.
+const apiKey = "123456789abcde..."
+B E) passwords.
+APK/IPA File Source Code
+e Reverse Engineering: An attacker can ‘unzip’ your compiled app (APK or IPA) and read its
+contents, including any text hardcoded within.
+e The Consequence: Anything you store directly in your app’s code—API Keys, passwords,
+secret tokens—is not secret. It is public information waiting to be found.
+
+
+
+-- Page 22 --
+y . .
+Al's Favorite Mistake: Hardcoded Secrets
+Al models are trained on vast amounts of public code, where placeholders and temporary keys are
+common. They will often generate code that is functional but leaks secrets in plain sight. This is
+one of the most common and dangerous vulnerabilities.
+The Al Suggestion : | The Professional Fix [E303
+// In ApiService.dart // In ApiService.dart
+class ApiService { class ApiService {
+// ... methods using the key
+// ... methods using the key }
+}
+This key is visible to anyone who decompiles the app. I The key is loaded from an environment file at runtime.
+The "TODO" comment is a confession of the security It is never stored in the compiled code.
+flaw.
+
+
+
+-- Page 23 --
+Your Auditor’s Toolkit for Today's Lab
+
+In this lab, you will perform a security audit on your own application. We will use systematic techniques
+
+to find and remediate the most common vulnerabilities introduced by Al-assisted development.
+Mission 1: The ‘Grep’ Audit
+Use text search to hunt for hardcoded secrets, just like a real attacker would.
+Mission 2: Hardening Secrets
+
+XD) Move discovered keys and tokens out of the codebase and into secure environment
+
+variables.
+Mission 3: Securing Data at Rest
+Upgrade from insecure plain-text storage to hardware-backed encrypted storage for
+sensitive user data.
+Mission 4: The Al Vulnerability Scan
+Use the Al against itself by prompting it to find security flaws in its own code.
+
+
+
+-- Page 24 --
+Mission 1: The ‘Grep’ Audit — Hunting for Exposed Secrets
+Attackers don't read code line-by-line; they use
+they use automated scripts to scan for keywords that indicate
+secrets. We will replicate this first step to find low-hanging fruit.
+**|nstructions**
+Open your project in your code editor or a terminal. Use the global search function (“Search in Files”) to
+scan your entire codebase for the following keywords. Be thorough and check your comments as well.
+api_key
+password
+http:
+Specifically “http® without the 's’, indicating insecure communication
+// TODO
+Often flags code developers knew was insecure
+**Task**
+Document any findings. Note the file and line number for remediation in the next mission.
+
+
+
+-- Page 25 --
+Mission 2: Hardening Secrets — The .env Solution
+
+If you found a hardcoded secret, the solution is to extract it from the code. We use environment
+variables, typically managed in a .env file, to load secrets at runtime.
+
+The Fix - A Two-Step Process
+
+1. Create a .env file in your project's root directory. This file will store your secrets. Example .env
+file content:
+API_KEY="sk-aBcDeFg12345HiJkLmNoPgRs..."
+
+2. Add .env to your .gitignore file. This is the most critical step. It prevents Git from ever
+committing your secrets to the repository. If you forget this, your secrets will be exposed on
+GitHub.
+
+A—
+(\ AN
+Nas .gitignore
+.env
+
+
+
+-- Page 26 --
+Implementing Secure Loading with an Al Prompt
+Now, instruct the Al to refactor your code to use the new .env file. You must provide clear,
+security-focused instructions.
+Act as a Security Engineer. I have moved my API key to a .env file.
+\n\nRefactor my ApiService class to load this key securely using the [flutter_dotenv
+/flutter_dotenv / react-native-dotenv] package.
+\n\nHandle the case where the key is missing by throwing an error, so the app fails
+safely instead of running with no credentials.
+Verification Checklist
+[J Does the app still run correctly?
+[J Isthe .env file listed in .gitignore?
+[J Have you checked your online repository to confirm the . env file is NOT visible?
+
+
+
+-- Page 27 --
+Mission 3: Securing Data at Rest - Beyond Plain Text
+Your app often needs to store sensitive user data on the device, like an authentication token to keep them
+logged in. Where you store this data matters enormously. Al often defaults to the easiest, least secure option.
+7] 22 d
+§ fo
+[2
+§ y= v
+“SharedPreferences” / “flutter_secure_storage" /
+“AsyncStorage” “expo-secure-store”
+This is like a plain text file (XML or JSON) stored on This uses the phone's hardware encryption chip
+the device. Malware or anyone with root access can (Keychain on iOS, Keystore on Android). Data is
+read it easily. Suitable for non-sensitive data like a encrypted and protected by the device's security. This
+‘Dark Mode’ setting. is the only acceptable place for tokens, passwords, or
+PII.
+
+
+
+-- Page 28 --
+Upgrading to Encrypted Storage
+Audit your *AuthService" or login logic. If you are using an insecure method like
+*SharedPreferences”, you must refactor it.
+Refactor my AuthService. Replace SharedPreferences with
+FlutterSecureStorage.
+1. When the user logs in, save the access_token securely.
+2. When the app starts, read the token from secure storage to auto-login.
+3. Constraint: Handle any platform exceptions that might occur if the
+device is not secure (e.g., has no screen lock).
+**Key Takeaway**: By explicitly demanding the secure library, you are guiding the Al to
+produce professional-grade, responsible code.
+
+
+
+-- Page 29 --
+Mission 4: The Al Vulnerability Scan — Turning the Al Against Itself
+Al created some of the vulnerabilities. Can it help us find them? In this final step, you will act as a
+security researcher and use your Al assistant as a static analysis tool. The results may surprise you.
+1. Select a file from your project that handles data, API calls, or user input.
+2. Paste the entire file's code into your Al chatbot.
+3. Use the following detailed prompt.
+Act as a Senior Security Researcher. Audit this code snippet for security
+vulnerabilities. Look specifically for:
+1. OWASP Mobile Top 10 risks.
+2. Data leakage in logs (e.g., printing passwords to the console).
+3. Weak or non-existent error handling for sensitive operations.
+**Analysis**: Did the Al find the flaw? Sometimes it will. Sometimes it will confidently state the code
+is ‘good’ when it's not. This proves that you, the human developer, are the final authority.
+
+
+
+-- Page 30 --
+Mission Accomplished: The Fortification is Complete
+By completing this audit, you have transformed your application from a potential liability
+into a fortified product. You have addressed the most common and critical security flaws
+often overlooked in rapid, Al-assisted development.
+Before After Key Improvements
+e Secrets are no longer in
+3 the code.
+i N e User data is encrypted at
+API Keys ie rest.
+APikeys © Insecure communication
+2,
+channels have been
+nn identified.
+Plaintext :
+Tokens Plntext
+Vulnerable Hardened
+
+
+
+-- Page 31 --
+From Checklist to Mindset: The Real Goal of the Audit
+
+This lab was not just about fixing three specific bugs.
+
+It was about developing a “security mindset.”
+
+This is the core attribute that separates a junior coder
+
+from a professional engineer.
+
+A Security Mindset means you now instinctively ask:
+
++ Where does this data live, and is it encrypted?
+
++ Could an attacker read this if they had the user's
+phone?
+
++ What is the “unhappy path” for this feature, and how
+can it be abused?
+
++ Am | trusting the Al's default suggestion, or am |
+demanding a secure one?
+
+
+
+-- Page 32 --
+Final Check: Applying Your Security Mindset
+
+Consider these two common scenarios. How would you respond, now that you have
+completed the audit?
+
+Scenario 1: The Leaky Log Scenario 2: The False Fix
+
+You are building a banking app. The Al Your app can't connect to a development
+generates code that logs the full API response server because of an invalid SSL certificate.
+to the console to help with debugging: The Al suggests a ‘fix’ that tells your app to
+print("Response: ${response.body}"). ignore all SSL errors. Why must you reject this
+Why is this a critical security violation? and fix the server certificate instead?
+
+Hint: The response might contain a credit card Hint: This ‘fix’ removes the security guard. It
+number, account balance, or personal address. opens your app to Man-in-the-Middle attacks on
+Logs can sometimes be accessed by other public WiFi, where a hacker could impersonate
+apps on the device. your server.
+
+
+
+-- Page 33 --
+Your Responsibility Continues
+
+The security foundation you built today is essential What Comes Next
+
+for the fal eed of cevelopment. a Fee app +» Week 9: Privacy & PDPA: We will build on today's
+Is:ne eri or) did RIESPONSIDIC an technical security by examining the legal and
+StCCEsSIL product: ethical responsibilities of handling user data.
+
++ Week 12: Deployment & App Distribution: The
+cryptographic keys you protected today are the
+same ones you will use to sign your app, proving
+its authenticity to users and the app stores.
+
+Security is not a feature to be added at the end.
+It is the bedrock upon which reliable software is built.
+

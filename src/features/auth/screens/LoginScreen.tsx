@@ -25,7 +25,6 @@ import {
   isNativeGoogleAvailable,
   expoGoSignIn,
 } from "../../../services/googleAuth";
-import { facebookSignIn } from "../../../services/facebookAuth";
 
 type Props = NativeStackScreenProps<RootStackParamList, typeof RouteNames.Login>;
 
@@ -38,15 +37,13 @@ export default function LoginScreen({ navigation }: Props) {
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const {
     login,
     signup,
-    resetPassword,
     loginAsGuest,
     loginWithGoogle,
     loginWithGooglePopup,
-    loginWithFacebook,
-    loginWithFacebookPopup,
     isLoading,
     error,
     clearError,
@@ -60,10 +57,23 @@ export default function LoginScreen({ navigation }: Props) {
     }
   }, [useNativeGoogle]);
 
+  useEffect(() => {
+    if (!isSignup) {
+      setConsentAccepted(false);
+    }
+  }, [isSignup]);
+
   const handleSubmit = async () => {
     try {
       clearError();
       if (isSignup) {
+        if (!consentAccepted) {
+          Alert.alert(
+            "Consent Required",
+            "Please agree to the Privacy Policy before creating an account."
+          );
+          return;
+        }
         await signup(email, password, name);
       } else {
         await login(email, password);
@@ -92,7 +102,7 @@ export default function LoginScreen({ navigation }: Props) {
       } else if (isExpoGo) {
         // ── Expo Go on iOS/Android: manual OAuth + PKCE ──
         const { idToken, accessToken } = await expoGoSignIn();
-        await loginWithGoogle(idToken, accessToken || null);
+        await loginWithGoogle(idToken, accessToken ?? null);
         navigation.replace(RouteNames.MainTabs);
       } else {
         throw new Error("Google Sign-In is not available in this build.");
@@ -104,49 +114,10 @@ export default function LoginScreen({ navigation }: Props) {
     }
   };
 
-  const handleForgotPassword = async () => {
-    const emailTrimmed = email.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailTrimmed) {
-      Alert.alert("Reset Password", "Please enter your email address first.");
-      return;
-    }
-
-    if (!emailRegex.test(emailTrimmed)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address.");
-      return;
-    }
-
-    try {
-      clearError();
-      await resetPassword(emailTrimmed);
-      Alert.alert("Check Your Email", "Password reset instructions have been sent.");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to send reset email";
-      Alert.alert("Reset Failed", msg);
-    }
-  };
-
-  const handleFacebookLogin = async () => {
-    try {
-      clearError();
-
-      if (Platform.OS === "web") {
-        // Web uses Firebase Auth popup flow; no custom redirect URI needed.
-        await loginWithFacebookPopup();
-      } else {
-        // Native uses manual OAuth flow to obtain Facebook access token.
-        const accessToken = await facebookSignIn();
-        await loginWithFacebook(accessToken);
-      }
-
-      navigation.replace(RouteNames.MainTabs);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Facebook login failed";
-      console.error("Facebook login error:", err);
-      Alert.alert("Error", msg);
-    }
+  const handleForgotPassword = () => {
+    navigation.navigate(RouteNames.ForgotPassword, {
+      email: email.trim() || undefined,
+    });
   };
 
   const handleGuestLogin = async () => {
@@ -232,10 +203,37 @@ export default function LoginScreen({ navigation }: Props) {
             </TouchableOpacity>
           )}
 
+          {isSignup && (
+            <View style={styles.consentRow}>
+              <TouchableOpacity
+                style={styles.consentToggle}
+                onPress={() => setConsentAccepted((prev) => !prev)}
+                disabled={isLoading}
+                testID="privacy_consent_toggle"
+              >
+                <View style={[styles.checkbox, consentAccepted && styles.checkboxChecked]}>
+                  {consentAccepted && <MaterialIcons name="check" size={14} color="#fff" />}
+                </View>
+                <Text style={styles.consentText}>I agree to the Privacy Policy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate(RouteNames.PrivacyPolicy)}
+                disabled={isLoading}
+              >
+                <Text style={styles.consentLink}>Read</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <TouchableOpacity
-            style={[styles.primaryBtn, isLoading && styles.primaryBtnDisabled]}
+            style={[
+              styles.primaryBtn,
+              (isLoading || (isSignup && !consentAccepted)) && styles.primaryBtnDisabled,
+            ]}
             onPress={handleSubmit}
-            disabled={isLoading}
+            disabled={isLoading || (isSignup && !consentAccepted)}
+            accessibilityState={{ disabled: isLoading || (isSignup && !consentAccepted) }}
+            testID="auth_submit_button"
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" size="small" />
@@ -273,15 +271,6 @@ export default function LoginScreen({ navigation }: Props) {
               >
                 <FontAwesome name="google" size={18} color={colors.textPrimary} />
                 <Text style={styles.socialText}>Continue with Google</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.socialBtn, styles.facebookBtn]}
-                onPress={handleFacebookLogin}
-                disabled={isLoading}
-              >
-                <FontAwesome name="facebook" size={18} color="#fff" />
-                <Text style={[styles.socialText, styles.facebookText]}>Continue with Facebook</Text>
               </TouchableOpacity>
             </>
           )}
@@ -506,6 +495,43 @@ const createStyles = (colors: ThemeColors) =>
     marginTop: spacing.lg,
     flexDirection: "row",
     gap: 6,
+  },
+  consentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+  },
+  consentToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    flex: 1,
+  },
+  checkbox: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.borderGlass,
+    backgroundColor: colors.surfaceAlt,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  checkboxChecked: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  consentText: {
+    color: colors.textMuted,
+    fontSize: 12,
+    flex: 1,
+  },
+  consentLink: {
+    color: colors.primaryLight,
+    fontSize: 12,
+    fontWeight: "700",
   },
   footerText: {
     color: colors.textMuted,

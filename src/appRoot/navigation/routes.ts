@@ -1,5 +1,6 @@
 export const RouteNames = {
   Login: "Login",
+  ForgotPassword: "ForgotPassword",
   Dashboard: "Dashboard",
   QuickCapture: "QuickCapture",
   TaskReview: "TaskReview",
@@ -9,4 +10,7 @@ export const RouteNames = {
   Settings: "Settings",
   Profile: "Profile",
   MainTabs: "MainTabs",
+  PrivacyConsent: "PrivacyConsent",
+  PrivacyPolicy: "PrivacyPolicy",
+  HelpFaq: "HelpFaq",
 } as const;
